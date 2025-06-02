@@ -1,3 +1,0 @@
-'''
-Skema database
-'''

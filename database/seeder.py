@@ -1,0 +1,3 @@
+'''
+Seeding data ke database
+'''

@@ -16,7 +16,7 @@ class SplashScreen(ctk.CTkToplevel):
         self.configure(fg_color="#18206F")  # Purple background
         self.resizable(False, False)
         
-        # Center the window
+        # Center the window relative to screen
         self.center_window()
         
         # Make it modal
@@ -28,8 +28,10 @@ class SplashScreen(ctk.CTkToplevel):
     def center_window(self):
         """Center window on screen"""
         self.update_idletasks()
-        x = (self.winfo_screenwidth() // 2) - (800 // 2)
-        y = (self.winfo_screenheight() // 2) - (600 // 2)
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        x = (screen_width - 800) // 2
+        y = (screen_height - 600) // 2
         self.geometry(f"800x600+{x}+{y}")
     
     def setup_ui(self):

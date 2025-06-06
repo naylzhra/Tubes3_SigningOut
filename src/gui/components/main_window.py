@@ -3,8 +3,8 @@ import customtkinter as ctk
 from .splash_screen import SplashScreen
 from .home_page import HomePage
 from .cv_summary_window import CVSummaryWindow, CVSummaryIntegration
-# from about_page import AboutPage
-# from developer_page import DeveloperPage
+from .about_page import AboutPage
+from .developer_page import DeveloperPage
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -109,7 +109,7 @@ class MainWindow(ctk.CTk):
         self.about_btn = ctk.CTkButton(
             nav_frame,
             text="About the App",
-            font=("Inter", 12),  # Reduced font size
+            font=("Inter", 12, "bold"),  # Reduced font size
             fg_color="transparent",
             text_color="white",
             hover_color="#B91C1C",
@@ -124,7 +124,7 @@ class MainWindow(ctk.CTk):
         self.dev_btn = ctk.CTkButton(
             nav_frame,
             text="Developer",
-            font=("Inter", 12),  # Reduced font size
+            font=("Inter", 12, "bold"),  # Reduced font size
             fg_color="transparent",
             text_color="white",
             hover_color="#B91C1C",
@@ -146,12 +146,11 @@ class MainWindow(ctk.CTk):
         """Initialize all page objects"""
         # Create page instances but don't pack them yet
         self.pages['home'] = HomePage(self.content_frame)
+        self.pages['about'] = AboutPage(self.content_frame)
+        self.pages['developer'] = DeveloperPage(self.content_frame)
         
         # Set main window reference for navigation
         self.pages['home'].set_main_window(self)
-        
-        # self.pages['about'] = AboutPage(self.content_frame)
-        # self.pages['developer'] = DeveloperPage(self.content_frame)
         
         # Hide all pages initially
         for page in self.pages.values():

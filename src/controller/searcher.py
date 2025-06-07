@@ -1,18 +1,27 @@
 # controller/searcher.py
 """
-Controller untuk menghubungkan KMP algorithm dengan UI
+Updated Controller untuk menghubungkan semua algoritma (KMP, Aho-Corasick, Levenshtein) dengan UI
 """
 
 from model.knuth_morris_pratt import (
     knuth_morris_pratt_with_cv_info, 
-    search_cvs_with_details,
+    search_cvs_with_details as search_cvs_with_kmp,
     DUMMY_CV_DATA
+)
+from model.aho_corasick import (
+    aho_corasick_search_with_cv_info,
+    search_cvs_with_aho_corasick,
+    DUMMY_CV_DATA as AC_DUMMY_DATA
+)
+from model.levenshtein_distance import (
+    levenshtein_search_with_cv_info,
+    search_cvs_with_levenshtein
 )
 import time
 
 class SearchController:
     def __init__(self):
-        # Use dummy data from KMP module
+        # Use dummy data from KMP module (consistent across all algorithms)
         self.cv_database = DUMMY_CV_DATA
         print(f"SearchController initialized with {len(self.cv_database)} CVs")
     
@@ -22,7 +31,7 @@ class SearchController:
         
         Args:
             keywords_str (str): String keywords yang dipisah koma atau spasi
-            algorithm (str): Algorithm type (KMP, BM, Fuzzy)
+            algorithm (str): Algorithm type (KMP, Aho-Corasick, Levenshtein)
             top_n (int): Number of top results to return
             
         Returns:
@@ -36,12 +45,22 @@ class SearchController:
         if not keywords:
             return self.create_empty_result()
         
-        # Untuk sekarang hanya implement KMP
+        # Choose algorithm
         if algorithm == "KMP":
             results = self.search_with_kmp(keywords, top_n)
+        elif algorithm == "Aho-Corasick":
+            results = self.search_with_aho_corasick(keywords, top_n)
+        elif algorithm == "Levenshtein":
+            results = self.search_with_levenshtein(keywords, top_n)
         else:
-            # TODO: Implement BM and Fuzzy matching
-            results = self.search_with_kmp(keywords, top_n)  # Fallback to KMP
+            # Default to KMP
+            results = self.search_with_kmp(keywords, top_n)
+        
+        # If no results found and not using Levenshtein, try Levenshtein as fallback
+        if len(results) == 0 and algorithm != "Levenshtein":
+            print(f"No results found with {algorithm}, trying Levenshtein distance as fallback...")
+            results = self.search_with_levenshtein(keywords, top_n)
+            algorithm = f"{algorithm} → Levenshtein"  # Indicate fallback was used
         
         end_time = time.time()
         search_time_ms = round((end_time - start_time) * 1000, 2)
@@ -74,7 +93,25 @@ class SearchController:
         print(f"Searching with KMP for keywords: {keywords}")
         
         # Use the detailed search function from KMP module
-        detailed_results = search_cvs_with_details(self.cv_database, keywords, top_n)
+        detailed_results = search_cvs_with_kmp(self.cv_database, keywords, top_n)
+        
+        return detailed_results
+    
+    def search_with_aho_corasick(self, keywords, top_n):
+        """Search using Aho-Corasick algorithm"""
+        print(f"Searching with Aho-Corasick for keywords: {keywords}")
+        
+        # Use the detailed search function from Aho-Corasick module
+        detailed_results = search_cvs_with_aho_corasick(self.cv_database, keywords, top_n)
+        
+        return detailed_results
+    
+    def search_with_levenshtein(self, keywords, top_n):
+        """Search using Levenshtein distance (fuzzy matching)"""
+        print(f"Searching with Levenshtein distance for keywords: {keywords}")
+        
+        # Use the detailed search function from Levenshtein module
+        detailed_results = search_cvs_with_levenshtein(self.cv_database, keywords, top_n)
         
         return detailed_results
     
@@ -126,7 +163,7 @@ class SearchController:
             }
         }
         
-        print(f"Search completed: {cvs_with_matches}/{total_cvs} CVs matched in {search_time_ms}ms")
+        print(f"Search completed: {cvs_with_matches}/{total_cvs} CVs matched in {search_time_ms}ms using {algorithm}")
         
         return formatted_response
     
@@ -170,22 +207,3 @@ class SearchController:
     def get_available_cvs(self):
         """Get list of available CV IDs"""
         return list(self.cv_database.keys())
-
-
-# Untuk testing
-if __name__ == "__main__":
-    # Test the search controller
-    controller = SearchController()
-    
-    # Test search
-    test_keywords = "python, javascript, react"
-    results = controller.search_cvs(test_keywords, "KMP", 3)
-    
-    print("\n=== SEARCH RESULTS ===")
-    print(f"Summary: {results['summary']}")
-    
-    print("\nResults:")
-    for i, result in enumerate(results['results'], 1):
-        print(f"{i}. {result['name']} - {result['total_matches']} matches")
-        for keyword in result['matched_keywords']:
-            print(f"   {keyword}")

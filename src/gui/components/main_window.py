@@ -32,11 +32,11 @@ class MainWindow(ctk.CTk):
         self.show_splash()
     
     def init_search_controller(self):
-        """Initialize search controller for KMP integration"""
+        """Initialize search controller for all algorithms integration"""
         try:
             from controller.searcher import SearchController
             self.search_controller = SearchController()
-            print("Search controller initialized successfully")
+            print("Search controller initialized successfully with all algorithms")
         except ImportError as e:
             print(f"Warning: Could not import SearchController: {e}")
             print("Make sure controller/searcher.py exists and is properly configured")
@@ -81,8 +81,8 @@ class MainWindow(ctk.CTk):
     
     def create_header(self):
         """Create navigation header with centered layout"""
-        header_frame = ctk.CTkFrame(self, height=80, fg_color="transparent")  # Reduced from 120 to 80
-        header_frame.pack(fill="x", padx=20, pady=(10, 5))  # Reduced bottom padding
+        header_frame = ctk.CTkFrame(self, height=80, fg_color="transparent")
+        header_frame.pack(fill="x", padx=20, pady=(10, 5))
         header_frame.pack_propagate(False)
         
         # Center container untuk semua header content
@@ -93,54 +93,54 @@ class MainWindow(ctk.CTk):
         title_label = ctk.CTkLabel(
             center_container,
             text="S i g n H i r e",
-            font=("Inter", 20, "bold"),  # Reduced from 24 to 20
+            font=("Inter", 20, "bold"),
             text_color="white"
         )
-        title_label.pack(pady=(10, 10))  # Reduced padding
+        title_label.pack(pady=(10, 10))
         
         # Navigation buttons - CENTERED di bawah title
         nav_frame = ctk.CTkFrame(center_container, fg_color="transparent")
-        nav_frame.pack(pady=(0, 5))  # Reduced padding
+        nav_frame.pack(pady=(0, 5))
         
         # Home button
         self.home_btn = ctk.CTkButton(
             nav_frame,
             text="Home",
-            font=("Inter", 12, "bold"),  # Reduced font size
+            font=("Inter", 12, "bold"),
             fg_color="#DC2626",
             hover_color="#B91C1C",
-            width=100,  # Reduced width
-            height=28,  # Reduced height
+            width=100,
+            height=28,
             corner_radius=25,
             command=lambda: self.show_page('home')
         )
-        self.home_btn.pack(side="left", padx=(0, 30))  # Reduced spacing
+        self.home_btn.pack(side="left", padx=(0, 30))
         
         # About button
         self.about_btn = ctk.CTkButton(
             nav_frame,
             text="About the App",
-            font=("Inter", 12, "bold"),  # Reduced font size
+            font=("Inter", 12, "bold"),
             fg_color="transparent",
             text_color="white",
             hover_color="#B91C1C",
-            width=100,  # Reduced width
-            height=28,  # Reduced height
+            width=100,
+            height=28,
             corner_radius=25,
             command=lambda: self.show_page('about')
         )
-        self.about_btn.pack(side="left", padx=(0, 30))  # Reduced spacing
+        self.about_btn.pack(side="left", padx=(0, 30))
         
         # Developer button
         self.dev_btn = ctk.CTkButton(
             nav_frame,
             text="Developer",
-            font=("Inter", 12, "bold"),  # Reduced font size
+            font=("Inter", 12, "bold"),
             fg_color="transparent",
             text_color="white",
             hover_color="#B91C1C",
-            width=100,  # Reduced width
-            height=28,  # Reduced height
+            width=100,
+            height=28,
             corner_radius=25,
             command=lambda: self.show_page('developer')
         )
@@ -213,7 +213,7 @@ class MainWindow(ctk.CTk):
             pass
     
     def perform_search(self, keywords, algorithm, top_matches):
-        """Handle search functionality from home page - integrated with KMP"""
+        """Handle search functionality from home page - integrated with all algorithms"""
         print(f"Main Window - Search requested:")
         print(f"  Keywords: {keywords}")
         print(f"  Algorithm: {algorithm}")
@@ -221,14 +221,21 @@ class MainWindow(ctk.CTk):
         
         if self.search_controller:
             try:
-                # Call search controller with KMP integration
+                # Call search controller with all algorithm support
                 results = self.search_controller.search_cvs(keywords, algorithm, top_matches)
                 
                 # Update home page with real results
                 home_page = self.pages['home']
                 home_page.display_search_results(results)
                 
-                print(f"KMP Search completed: {len(results['results'])} results found")
+                algorithm_used = results['summary']['algorithm_used']
+                result_count = len(results['results'])
+                
+                print(f"{algorithm_used} Search completed: {result_count} results found")
+                
+                # Log fallback usage if applicable
+                if "→" in algorithm_used:
+                    print(f"Fallback mechanism activated: {algorithm_used}")
                 
             except Exception as e:
                 print(f"Search error: {e}")
@@ -241,7 +248,29 @@ class MainWindow(ctk.CTk):
     def simulate_search_results(self):
         """Simulate search results for testing when controller not available"""
         home_page = self.pages['home']
-        home_page.update_results_display()
+        
+        # Create mock results for testing
+        mock_results = {
+            "results": [
+                {
+                    "cv_id": "cv_1",
+                    "name": "John Doe",
+                    "total_matches": 3,
+                    "matched_keywords": ["• python (2)", "• javascript (1)"],
+                    "match_details": {"python": 2, "javascript": 1},
+                    "positions": {"python": [45, 120], "javascript": [200]}
+                }
+            ],
+            "summary": {
+                "total_cvs_searched": 6,
+                "cvs_with_matches": 1,
+                "search_time_ms": 15,
+                "algorithm_used": "Mock Algorithm",
+                "keywords_searched": 2
+            }
+        }
+        
+        home_page.display_search_results(mock_results)
         print("Search simulation completed")
     
     def show_cv_summary(self, cv_index):
@@ -263,7 +292,7 @@ class MainWindow(ctk.CTk):
             self.show_error_dialog("CV Summary Error", f"Could not open CV summary: {str(e)}")
     
     def view_cv_file(self, cv_index):
-        """Open CV file viewer - show content from KMP data or dummy data"""
+        """Open CV file viewer - show content from search data or dummy data"""
         print(f"Main Window - View CV file {cv_index}")
         
         try:

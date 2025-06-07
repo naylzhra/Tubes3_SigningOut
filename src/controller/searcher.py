@@ -13,6 +13,11 @@ from model.aho_corasick import (
     search_cvs_with_aho_corasick,
     DUMMY_CV_DATA as AC_DUMMY_DATA
 )
+from model.boyer_moore import (
+    boyer_moore_with_cv_info,
+    search_cvs_boyer_moore,
+    DUMMY_CV_DATA as BM_DUMMY_DATA
+)
 from model.levenshtein_distance import (
     levenshtein_search_with_cv_info,
     search_cvs_with_levenshtein
@@ -48,6 +53,8 @@ class SearchController:
         # Choose algorithm
         if algorithm == "KMP":
             results = self.search_with_kmp(keywords, top_n)
+        elif algorithm == "BM":  # Boyer-Moore
+            results = self.search_with_boyer_moore(keywords, top_n)
         elif algorithm == "Aho-Corasick":
             results = self.search_with_aho_corasick(keywords, top_n)
         elif algorithm == "Levenshtein":
@@ -94,6 +101,15 @@ class SearchController:
         
         # Use the detailed search function from KMP module
         detailed_results = search_cvs_with_kmp(self.cv_database, keywords, top_n)
+        
+        return detailed_results
+    
+    def search_with_boyer_moore(self, keywords, top_n):
+        """Search using Boyer-Moore algorithm"""
+        print(f"Searching with Boyer-Moore for keywords: {keywords}")
+        
+        # Use the detailed search function from Boyer-Moore module
+        detailed_results = search_cvs_boyer_moore(self.cv_database, keywords, top_n)
         
         return detailed_results
     

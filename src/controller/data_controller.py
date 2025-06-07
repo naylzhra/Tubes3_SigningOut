@@ -1,7 +1,14 @@
 '''
 Fetch dan convert data (ke long string) dari database
 '''
-from ..database.db_setup import get_db_connection
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
+from database.db_setup import get_db_connection
+from model.encryptor import Encryptor
+
+encryptor = Encryptor("SIGNHIRE")
 
 # ini bisa diambil dari nayla
 def extract_cv_long_string(filepath : str) :
@@ -50,7 +57,7 @@ def get_applicant_data(id_list : list) -> map :
     conn = get_db_connection()
     cur = conn.cursor(prepared=True)
     cur.execute(f"""
-        SELECT ad.detail_id, CONCAT(first_name, " ", last_name) AS name, email, date_of_birth, applicant_address, phone_number
+        SELECT ad.detail_id, first_name, last_name, email, date_of_birth, applicant_address, phone_number
         FROM ApplicantProfile ap JOIN ApplicationDetail ad ON ap.applicant_id = ad.applicant_id
         WHERE ad.detail_id IN ({placeholder})
     """, id_list)
@@ -61,14 +68,14 @@ def get_applicant_data(id_list : list) -> map :
     formatted_result = {}
     for row in result:
         detail_id = row[0]
-        dob = row[3]
+        dob = row[4]
         dob_str = dob.strftime("%d %B %Y") if dob else None
         formatted_result[detail_id] = {
-            "name": row[1],
-            "email": row[2],
+            "name": encryptor.decrypt(row[1]) + " " + encryptor.decrypt(row[2]),
+            "email": encryptor.decrypt(row[3]),
             "date_of_birth": dob_str,
-            "applicant_address": row[4],
-            "phone_number": row[5]
+            "applicant_address": encryptor.decrypt(row[5]),
+            "phone_number": encryptor.decrypt(row[6])
         }
         
     # close connection
@@ -80,8 +87,8 @@ def get_applicant_data(id_list : list) -> map :
     return formatted_result
 
     
-# if __name__ == "__main__":
-#     res = get_cv_paths()
-#     print(res)
-#     res = get_applicant_data([1,3,7,9,100])
-#     print(res)
+if __name__ == "__main__":
+    # res = get_cv_paths()
+    # print(res)
+    res = get_applicant_data([1,3,7,9,100])
+    print(res)

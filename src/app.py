@@ -1,4 +1,3 @@
-# app.py
 from gui.components.main_window import MainWindow
 import customtkinter as ctk
 

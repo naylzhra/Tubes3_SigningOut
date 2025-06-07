@@ -1,11 +1,18 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 import itertools
 import re
 from pathlib import Path
 from faker import Faker
 from db_setup import get_db_connection
+from model.encryptor import Encryptor
+
 
 fake = Faker()
 DATA_ROOT = Path(__file__).resolve().parents[2] / "data"
+encryptor = Encryptor("SIGNHIRE")
 
 def clean_phone() -> str:
     digits = re.sub(r'\D', '', fake.phone_number())
@@ -38,12 +45,12 @@ def seed_applicant_profiles(n: int = 250):
         profile = fake.simple_profile()
         first, *last = profile["name"].split()
         cur.execute(insert_stmt, (
-            first,
-            " ".join(last),
-            profile["mail"],
+            encryptor.encrypt(first),
+            encryptor.encrypt(" ".join(last)) if last else "",
+            encryptor.encrypt(profile["mail"]),
             profile["birthdate"],
-            profile["address"].replace("\n", ", "),
-            clean_phone()
+            encryptor.encrypt(profile["address"].replace("\n", ", ")),
+            encryptor.encrypt(clean_phone())
         ))
     conn.commit()
     print(f"Seeded {n} ApplicantProfile rows.")

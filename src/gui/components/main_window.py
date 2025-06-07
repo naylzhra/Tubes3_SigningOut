@@ -23,16 +23,27 @@ class MainWindow(ctk.CTk):
         self.current_page = None
         self.pages = {}
         
-        # Initialize controllers (commented for now)
-        # TODO: Uncomment when controllers are ready
-        # from controller.searcher import SearchController
-        # from controller.data_controller import DataController
-        # self.search_controller = SearchController()
-        # self.data_controller = DataController()
+        # Initialize controllers
+        self.search_controller = None
+        self.init_search_controller()
         
         # Show splash screen first
         self.withdraw()  # Hide main window
         self.show_splash()
+    
+    def init_search_controller(self):
+        """Initialize search controller for KMP integration"""
+        try:
+            from controller.searcher import SearchController
+            self.search_controller = SearchController()
+            print("Search controller initialized successfully")
+        except ImportError as e:
+            print(f"Warning: Could not import SearchController: {e}")
+            print("Make sure controller/searcher.py exists and is properly configured")
+            self.search_controller = None
+        except Exception as e:
+            print(f"Warning: Could not initialize search controller: {e}")
+            self.search_controller = None
     
     def center_window(self):
         """Center window on screen"""
@@ -149,7 +160,7 @@ class MainWindow(ctk.CTk):
         self.pages['about'] = AboutPage(self.content_frame)
         self.pages['developer'] = DeveloperPage(self.content_frame)
         
-        # Set main window reference for navigation
+        # Set main window reference for navigation and pass search controller
         self.pages['home'].set_main_window(self)
         
         # Hide all pages initially
@@ -190,10 +201,7 @@ class MainWindow(ctk.CTk):
     def on_page_changed(self, page_name):
         """Handle page-specific logic when page changes"""
         if page_name == 'home':
-            # Connect home page search functionality
-            # TODO: Uncomment when search controller is ready
-            # home_page = self.pages['home']
-            # home_page.search_callback = self.perform_search
+            # Home page gets search functionality through set_main_window
             pass
         
         elif page_name == 'about':
@@ -205,42 +213,44 @@ class MainWindow(ctk.CTk):
             pass
     
     def perform_search(self, keywords, algorithm, top_matches):
-        """Handle search functionality from home page"""
+        """Handle search functionality from home page - integrated with KMP"""
         print(f"Main Window - Search requested:")
         print(f"  Keywords: {keywords}")
         print(f"  Algorithm: {algorithm}")
         print(f"  Top Matches: {top_matches}")
         
-        # TODO: Uncomment and implement when controllers are ready
-        # try:
-        #     # Call search controller
-        #     results = self.search_controller.search_cvs(keywords, algorithm, top_matches)
-        #     
-        #     # Update home page with results
-        #     home_page = self.pages['home']
-        #     home_page.display_search_results(results)
-        #     
-        #     print(f"Search completed: {len(results['results'])} results found")
-        #     
-        # except Exception as e:
-        #     self.show_error_dialog("Search Error", f"An error occurred during search: {str(e)}")
-        
-        # For now, just simulate search
-        self.simulate_search_results()
+        if self.search_controller:
+            try:
+                # Call search controller with KMP integration
+                results = self.search_controller.search_cvs(keywords, algorithm, top_matches)
+                
+                # Update home page with real results
+                home_page = self.pages['home']
+                home_page.display_search_results(results)
+                
+                print(f"KMP Search completed: {len(results['results'])} results found")
+                
+            except Exception as e:
+                print(f"Search error: {e}")
+                self.show_error_dialog("Search Error", f"An error occurred during search: {str(e)}")
+        else:
+            # Fallback to simulation if controller not available
+            print("Search controller not available, using simulation")
+            self.simulate_search_results()
     
     def simulate_search_results(self):
-        """Simulate search results for testing"""
+        """Simulate search results for testing when controller not available"""
         home_page = self.pages['home']
         home_page.update_results_display()
         print("Search simulation completed")
     
     def show_cv_summary(self, cv_index):
-        """Show CV summary window"""        
+        """Show CV summary window using dummy data"""        
         print(f"Main Window - Show summary for CV {cv_index}")
         
         try:
-            # Get CV data (implement this method based on your data source)
-            cv_data = self.get_cv_data(cv_index)
+            # Always use dummy data for summary (as requested)
+            cv_data = self.get_dummy_cv_data(cv_index)
             
             # Show summary window using the integration class
             summary_window = CVSummaryIntegration.show_cv_summary(self, cv_data)
@@ -249,30 +259,93 @@ class MainWindow(ctk.CTk):
                 print(f"CV Summary window opened for CV {cv_index}")
             
         except Exception as e:
+            print(f"Error showing CV summary: {e}")
             self.show_error_dialog("CV Summary Error", f"Could not open CV summary: {str(e)}")
     
     def view_cv_file(self, cv_index):
-        """Open CV file viewer"""
+        """Open CV file viewer - show content from KMP data or dummy data"""
         print(f"Main Window - View CV file {cv_index}")
         
         try:
-            # TODO: Implement actual CV file viewer
-            # For now, show a placeholder message
+            # Try to get content from search controller first
+            if self.search_controller:
+                cv_content = self.get_cv_content_from_controller(cv_index)
+                if cv_content:
+                    cv_id = f"cv_{cv_index + 1}"
+                    self.show_cv_content_dialog(cv_id, cv_content)
+                    return
+            
+            # Fallback to showing info dialog
             self.show_info_dialog("CV Viewer", f"Opening CV file for applicant {cv_index}...\n\nThis feature will open the PDF viewer.")
             
-            # TODO: Implement actual file opening logic
-            # from controller.cv_viewer import CVViewer
-            # cv_viewer = CVViewer()
-            # cv_viewer.open_cv(cv_index)
-            
         except Exception as e:
+            print(f"Error viewing CV: {e}")
             self.show_error_dialog("CV Viewer Error", f"Could not open CV: {str(e)}")
     
-    def get_cv_data(self, cv_index):
-        """Get CV data for the specified index"""
-        # TODO: Replace with actual database/controller call
-        # For now, return sample data based on index
+    def get_cv_content_from_controller(self, cv_index):
+        """Get CV content from search controller if available"""
+        try:
+            if self.search_controller and hasattr(self.search_controller, 'cv_database'):
+                cv_ids = list(self.search_controller.cv_database.keys())
+                if 0 <= cv_index < len(cv_ids):
+                    cv_id = cv_ids[cv_index]
+                    return self.search_controller.get_cv_content(cv_id)
+            return None
+        except Exception as e:
+            print(f"Error getting CV content from controller: {e}")
+            return None
+    
+    def show_cv_content_dialog(self, cv_id, content):
+        """Show CV content in a dialog window"""
+        dialog = ctk.CTkToplevel(self)
+        dialog.title(f"CV Content - {cv_id}")
+        dialog.geometry("700x500")
+        dialog.configure(fg_color="#18206F")
+        dialog.transient(self)
+        dialog.grab_set()
         
+        # Center dialog
+        self.center_dialog(dialog, 700, 500)
+        
+        # Header
+        header_label = ctk.CTkLabel(
+            dialog,
+            text=f"CV Content - {cv_id.replace('_', ' ').title()}",
+            font=("Inter", 16, "bold"),
+            text_color="white"
+        )
+        header_label.pack(pady=(20, 10))
+        
+        # Content text widget
+        text_widget = ctk.CTkTextbox(
+            dialog,
+            width=660,
+            height=380,
+            fg_color="#F5E2C8",
+            text_color="#7C2D12",
+            font=("Inter", 11),
+            wrap="word"
+        )
+        text_widget.pack(padx=20, pady=(10, 10))
+        
+        # Insert content
+        text_widget.insert("1.0", content)
+        text_widget.configure(state="disabled")  # Read-only
+        
+        # Close button
+        close_btn = ctk.CTkButton(
+            dialog,
+            text="Close",
+            command=dialog.destroy,
+            fg_color="#DC2626",
+            hover_color="#B91C1C",
+            width=100,
+            height=35
+        )
+        close_btn.pack(pady=(10, 20))
+    
+    def get_dummy_cv_data(self, cv_index):
+        """Get dummy CV data for summary - kept as original implementation"""
         sample_data = [
             {
                 "full_name": "Newa Sagita",
@@ -347,6 +420,66 @@ class MainWindow(ctk.CTk):
                         "period": "2008 - 2012"
                     }
                 ]
+            },
+            {
+                "full_name": "David Wilson",
+                "birth_date": "22-11-1993",
+                "address": "Jl. Merdeka No. 45, Surabaya",
+                "phone_number": "0877-2345-6789",
+                "skills": ["JavaScript", "TypeScript", "React", "Node.js", "MongoDB", "Express"],
+                "work_experience": [
+                    {
+                        "title": "Full Stack Developer",
+                        "period": "2021 - 2024",
+                        "description": "Developed end-to-end web applications using MERN stack. Implemented real-time features and optimized application performance."
+                    }
+                ],
+                "education": [
+                    {
+                        "degree": "Bachelor of Software Engineering - Institut Teknologi Sepuluh Nopember",
+                        "period": "2015 - 2019"
+                    }
+                ]
+            },
+            {
+                "full_name": "Lisa Wang",
+                "birth_date": "08-07-1991",
+                "address": "Jl. Asia Afrika No. 88, Bandung",
+                "phone_number": "0895-7654-3210",
+                "skills": ["Python", "Machine Learning", "TensorFlow", "Data Analysis", "SQL", "Pandas"],
+                "work_experience": [
+                    {
+                        "title": "Data Scientist",
+                        "period": "2019 - 2024",
+                        "description": "Analyzed large datasets and built machine learning models for business insights. Specialized in predictive analytics and data visualization."
+                    }
+                ],
+                "education": [
+                    {
+                        "degree": "Master of Data Science - Universitas Indonesia",
+                        "period": "2017 - 2019"
+                    }
+                ]
+            },
+            {
+                "full_name": "Emily Rodriguez",
+                "birth_date": "14-02-1994",
+                "address": "Jl. Diponegoro No. 12, Yogyakarta",
+                "phone_number": "0813-9876-5432",
+                "skills": ["AWS", "Docker", "Kubernetes", "DevOps", "Linux", "Terraform"],
+                "work_experience": [
+                    {
+                        "title": "DevOps Engineer",
+                        "period": "2020 - 2024",
+                        "description": "Managed cloud infrastructure and CI/CD pipelines. Automated deployment processes and improved system reliability."
+                    }
+                ],
+                "education": [
+                    {
+                        "degree": "Bachelor of Information Technology - Universitas Gadjah Mada",
+                        "period": "2016 - 2020"
+                    }
+                ]
             }
         ]
         
@@ -354,19 +487,18 @@ class MainWindow(ctk.CTk):
         if 0 <= cv_index < len(sample_data):
             selected_data = sample_data[cv_index]
         else:
-            selected_data = sample_data[0]  # Fallback to first entry
+            selected_data = sample_data[cv_index % len(sample_data)]  # Cycle through data
         
         # Format the data for CV summary window
         formatted_data = CVSummaryIntegration.format_cv_data(selected_data)
         return formatted_data
-        
-        # TODO: Replace with actual database call
-        # try:
-        #     cv_data = self.data_controller.get_applicant_data(cv_index)
-        #     return CVSummaryIntegration.format_cv_data(cv_data)
-        # except Exception as e:
-        #     print(f"Error fetching CV data: {e}")
-        #     return None
+    
+    def center_dialog(self, dialog, width, height):
+        """Center dialog relative to main window"""
+        dialog.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() // 2) - (width // 2)
+        y = self.winfo_y() + (self.winfo_height() // 2) - (height // 2)
+        dialog.geometry(f"{width}x{height}+{x}+{y}")
     
     def show_error_dialog(self, title, message):
         """Show error dialog"""
@@ -378,11 +510,7 @@ class MainWindow(ctk.CTk):
         dialog.grab_set()
         
         # Center the dialog relative to main window
-        self.update_idletasks()
-        dialog.update_idletasks()
-        x = self.winfo_x() + (self.winfo_width() // 2) - (400 // 2)
-        y = self.winfo_y() + (self.winfo_height() // 2) - (200 // 2)
-        dialog.geometry(f"400x200+{x}+{y}")
+        self.center_dialog(dialog, 400, 200)
         
         # Error message
         error_label = ctk.CTkLabel(
@@ -414,11 +542,7 @@ class MainWindow(ctk.CTk):
         dialog.grab_set()
         
         # Center the dialog relative to main window
-        self.update_idletasks()
-        dialog.update_idletasks()
-        x = self.winfo_x() + (self.winfo_width() // 2) - (400 // 2)
-        y = self.winfo_y() + (self.winfo_height() // 2) - (200 // 2)
-        dialog.geometry(f"400x200+{x}+{y}")
+        self.center_dialog(dialog, 400, 200)
         
         # Info message
         info_label = ctk.CTkLabel(
@@ -454,23 +578,6 @@ class MainWindow(ctk.CTk):
             # You can implement page-specific refresh logic here
             pass
     
-    # Database connection methods (commented for now)
-    # TODO: Uncomment when database is ready
-    # def connect_database(self):
-    #     """Initialize database connection"""
-    #     try:
-    #         from database.db_manager import DatabaseManager
-    #         self.db_manager = DatabaseManager()
-    #         return True
-    #     except Exception as e:
-    #         self.show_error_dialog("Database Error", f"Could not connect to database: {str(e)}")
-    #         return False
-    
-    # def load_cv_data(self):
-    #     """Load CV data from database"""
-    #     try:
-    #         cv_data = self.db_manager.get_all_applications()
-    #         return cv_data
-    #     except Exception as e:
-    #         self.show_error_dialog("Data Error", f"Could not load CV data: {str(e)}")
-    #         return []
+    def get_search_controller(self):
+        """Get search controller instance"""
+        return self.search_controller

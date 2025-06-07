@@ -1,4 +1,3 @@
-# main_window.py
 import customtkinter as ctk
 from .splash_screen import SplashScreen
 from .home_page import HomePage
@@ -292,17 +291,26 @@ class MainWindow(ctk.CTk):
             self.show_error_dialog("CV Summary Error", f"Could not open CV summary: {str(e)}")
     
     def view_cv_file(self, cv_index):
-        """Open CV file viewer - show content from search data or dummy data"""
+        """Open CV file viewer - show actual PDF from database"""
         print(f"Main Window - View CV file {cv_index}")
         
         try:
-            # Try to get content from search controller first
-            if self.search_controller:
-                cv_content = self.get_cv_content_from_controller(cv_index)
-                if cv_content:
-                    cv_id = f"cv_{cv_index + 1}"
-                    self.show_cv_content_dialog(cv_id, cv_content)
-                    return
+            # Get CV ID and file path from search controller
+            if self.search_controller and hasattr(self.search_controller, 'cv_database'):
+                cv_ids = list(self.search_controller.cv_database.keys())
+                if 0 <= cv_index < len(cv_ids):
+                    cv_id = cv_ids[cv_index]
+                    
+                    # Get actual CV file path from database
+                    cv_file_path = self.search_controller.get_cv_file_path(cv_id)
+                    
+                    if cv_file_path:
+                        # Try to open the PDF file
+                        self.open_pdf_file(cv_file_path, cv_id)
+                        return
+                    else:
+                        self.show_error_dialog("CV File Error", f"CV file not found for {cv_id}")
+                        return
             
             # Fallback to showing info dialog
             self.show_info_dialog("CV Viewer", f"Opening CV file for applicant {cv_index}...\n\nThis feature will open the PDF viewer.")
@@ -310,6 +318,64 @@ class MainWindow(ctk.CTk):
         except Exception as e:
             print(f"Error viewing CV: {e}")
             self.show_error_dialog("CV Viewer Error", f"Could not open CV: {str(e)}")
+    
+    def open_pdf_file(self, cv_file_path, cv_id):
+        """
+        Open PDF file using system default application or show content in dialog
+        """
+        try:
+            import os
+            import platform
+            from pathlib import Path
+            
+            # Convert to absolute path
+            if not os.path.isabs(cv_file_path):
+                project_root = Path(__file__).resolve().parents[2]
+                full_path = project_root / cv_file_path
+            else:
+                full_path = Path(cv_file_path)
+            
+            if not full_path.exists():
+                self.show_error_dialog("File Not Found", f"CV file not found:\n{full_path}")
+                return
+            
+            # Try to open with system default application
+            system = platform.system()
+            
+            if system == "Windows":
+                os.startfile(str(full_path))
+            elif system == "Darwin":  # macOS
+                os.system(f"open '{full_path}'")
+            elif system == "Linux":
+                os.system(f"xdg-open '{full_path}'")
+            else:
+                # Fallback: show extracted content in dialog
+                self.show_pdf_content_dialog(cv_file_path, cv_id)
+            
+            print(f"Opened CV file: {full_path}")
+            
+        except Exception as e:
+            print(f"Error opening PDF: {e}")
+            # Fallback to content dialog
+            self.show_pdf_content_dialog(cv_file_path, cv_id)
+    
+    def show_pdf_content_dialog(self, cv_file_path, cv_id):
+        """
+        Show PDF content extracted as text in a dialog window
+        """
+        try:
+            # Extract content using the CV data manager
+            if self.search_controller and hasattr(self.search_controller, 'cv_data_manager'):
+                content = self.search_controller.cv_data_manager.extract_cv_content(cv_file_path, use_regex=True)
+            else:
+                content = f"Could not extract content from {cv_file_path}"
+            
+            # Show in dialog
+            self.show_cv_content_dialog(cv_id, content)
+            
+        except Exception as e:
+            print(f"Error extracting PDF content: {e}")
+            self.show_error_dialog("PDF Extract Error", f"Could not extract PDF content: {str(e)}")
     
     def get_cv_content_from_controller(self, cv_index):
         """Get CV content from search controller if available"""

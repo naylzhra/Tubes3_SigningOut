@@ -503,16 +503,21 @@ class HomePage(ctk.CTkScrollableFrame):
     
     def cv_id_to_index(self, cv_id):
         """Convert CV ID to index for compatibility"""
-        # Simple mapping for compatibility with existing summary system
-        cv_mapping = {
-            "cv_1": 0,
-            "cv_2": 1,
-            "cv_3": 2,
-            "cv_4": 3,
-            "cv_5": 4,
-            "cv_6": 5
-        }
-        return cv_mapping.get(cv_id, 0)
+        try:
+            # For database integration, extract index from CV ID
+            if self.search_controller and hasattr(self.search_controller, 'cv_database'):
+                cv_ids = list(self.search_controller.cv_database.keys())
+                if cv_id in cv_ids:
+                    return cv_ids.index(cv_id)
+            
+            # Fallback: extract number from cv_id (format: cv_X)
+            if cv_id.startswith('cv_'):
+                return int(cv_id.split('_')[1]) - 1
+            
+            return 0
+        except Exception as e:
+            print(f"Error converting CV ID to index: {e}")
+            return 0
     
     def show_cv_content_dialog(self, cv_id, content):
         """Show CV content in a dialog"""

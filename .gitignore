@@ -36,3 +36,5 @@ build/
 
 # Ignore compiled PyInstaller files
 *.spec
+
+tempCodeRunnerFile.py

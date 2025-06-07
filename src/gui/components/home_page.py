@@ -58,118 +58,118 @@ class HomePage(ctk.CTkScrollableFrame):
         
         # Main container with adjusted spacing
         main_container = ctk.CTkFrame(self, fg_color="transparent")
-        main_container.pack(fill="both", expand=True, padx=15, pady=5)  # Reduced padding
+        main_container.pack(fill="both", expand=True, padx=15, pady=5)
         
         # Search section with compact layout
         search_frame = ctk.CTkFrame(main_container, fg_color="transparent")
-        search_frame.pack(fill="x", pady=(0, 10))  # Reduced padding
+        search_frame.pack(fill="x", pady=(0, 10))
         
         # Keywords
         keywords_label = ctk.CTkLabel(
             search_frame,
             text="Keywords (separate with commas or spaces):",
-            font=("Inter", 12, "bold"),  # Reduced font size
+            font=("Inter", 12, "bold"),
             text_color="white"
         )
-        keywords_label.pack(anchor="w", pady=(0, 3))  # Reduced padding
+        keywords_label.pack(anchor="w", pady=(0, 3))
         
         # Search entry with example placeholder
         self.search_entry = ctk.CTkEntry(
             search_frame,
             placeholder_text="e.g. python, javascript, react",
-            height=30,  # Reduced height
-            width=300,  # Increased width for better visibility
-            font=("Inter", 10, "bold"),  # Reduced font size
+            height=30,
+            width=300,
+            font=("Inter", 10, "bold"),
             fg_color="#F5E2C8",
             text_color="#7C2D12",
             placeholder_text_color="#92400E",
-            corner_radius=18  # Adjusted corner radius
+            corner_radius=18
         )
-        self.search_entry.pack(anchor="w", pady=(0, 12))  # Reduced padding
+        self.search_entry.pack(anchor="w", pady=(0, 12))
         
         # Algorithm selection
         algo_label = ctk.CTkLabel(
             search_frame,
             text="Search Algorithm:",
-            font=("Inter", 12, "bold"),  # Reduced font size
+            font=("Inter", 12, "bold"),
             text_color="white"
         )
-        algo_label.pack(anchor="w", pady=(0, 8))  # Reduced padding
+        algo_label.pack(anchor="w", pady=(0, 8))
         
         # Algorithm buttons frame
         algo_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
-        algo_frame.pack(anchor="w", pady=(0, 12))  # Reduced padding
+        algo_frame.pack(anchor="w", pady=(0, 12))
         
         # KMP Button
         self.kmp_btn = ctk.CTkButton(
             algo_frame,
             text="KMP",
-            width=75,  # Reduced width
-            height=28,  # Reduced height
+            width=75,
+            height=28,
             corner_radius=16,
             fg_color="#F5E2C8",
             text_color="#7C2D12",
             hover_color="#FDE68A",
-            font=("Inter", 11, "bold"),  # Reduced font size
+            font=("Inter", 11, "bold"),
             command=lambda: self.select_algorithm("KMP")
         )
-        self.kmp_btn.pack(side="left", padx=(0, 8))  # Reduced padding
+        self.kmp_btn.pack(side="left", padx=(0, 8))
         
         # BM Button
         self.bm_btn = ctk.CTkButton(
             algo_frame,
             text="BM",
-            width=75,  # Reduced width
-            height=28,  # Reduced height
+            width=75,
+            height=28,
             corner_radius=16,
             fg_color="transparent",
             border_color="#F5E2C8",
             border_width=2,
             text_color="white",
             hover_color="#F5E2C8",
-            font=("Inter", 11, "bold"),  # Reduced font size
+            font=("Inter", 11, "bold"),
             command=lambda: self.select_algorithm("BM")
         )
-        self.bm_btn.pack(side="left", padx=(0, 8))  # Reduced padding
+        self.bm_btn.pack(side="left", padx=(0, 8))
         
-        # Fuzzy Matching Button
-        self.fuzzy_btn = ctk.CTkButton(
+        # Aho-Corasick Button (previously Fuzzy Matching)
+        self.aho_corasick_btn = ctk.CTkButton(
             algo_frame,
-            text="Fuzzy Matching",
-            width=130,  # Reduced width
-            height=28,  # Reduced height
+            text="Aho-Corasick",
+            width=130,
+            height=28,
             corner_radius=16,
             fg_color="transparent",
             border_color="#F5E2C8",
             border_width=2,
             text_color="white",
             hover_color="#F5E2C8",
-            font=("Inter", 11, "bold"),  # Reduced font size
-            command=lambda: self.select_algorithm("Fuzzy")
+            font=("Inter", 11, "bold"),
+            command=lambda: self.select_algorithm("Aho-Corasick")
         )
-        self.fuzzy_btn.pack(side="left")
+        self.aho_corasick_btn.pack(side="left")
         
         # Top Matches section
         matches_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
-        matches_frame.pack(anchor="w", pady=(0, 12))  # Reduced padding
+        matches_frame.pack(anchor="w", pady=(0, 12))
         
         matches_label = ctk.CTkLabel(
             matches_frame,
             text="Top Matches:",
-            font=("Inter", 12, "bold"),  # Reduced font size
+            font=("Inter", 12, "bold"),
             text_color="white"
         )
-        matches_label.pack(side="left", padx=(0, 15), pady = 10)  # Reduced padding
+        matches_label.pack(side="left", padx=(0, 15), pady=10)
         
         # Counter frame
-        counter_frame = ctk.CTkFrame(matches_frame, fg_color="#F5E2C8", height=28, corner_radius=16)  # Reduced height
+        counter_frame = ctk.CTkFrame(matches_frame, fg_color="#F5E2C8", height=28, corner_radius=16)
         counter_frame.pack(side="left")
         
         minus_btn = ctk.CTkButton(
             counter_frame,
             text="-",
-            width=22,  # Reduced width
-            height=22,  # Reduced height
+            width=22,
+            height=22,
             corner_radius=16,
             fg_color="transparent",
             text_color="#7C2D12",
@@ -177,22 +177,22 @@ class HomePage(ctk.CTkScrollableFrame):
             font=("Inter", 14, "bold"),
             command=self.decrease_matches
         )
-        minus_btn.pack(side="left", padx=4, pady=2)  # Reduced padding
+        minus_btn.pack(side="left", padx=4, pady=2)
         
         self.count_label = ctk.CTkLabel(
             counter_frame,
             text="5",  # Default value
-            font=("Inter", 13, "bold"),  # Reduced font size
+            font=("Inter", 13, "bold"),
             text_color="#7C2D12",
-            width=25  # Reduced width
+            width=25
         )
         self.count_label.pack(side="left", pady=2)
         
         plus_btn = ctk.CTkButton(
             counter_frame,
             text="+",
-            width=22,  # Reduced width
-            height=22,  # Reduced height
+            width=22,
+            height=22,
             corner_radius=16,
             fg_color="transparent",
             text_color="#7C2D12",
@@ -200,21 +200,21 @@ class HomePage(ctk.CTkScrollableFrame):
             font=("Inter", 14, "bold"),
             command=self.increase_matches
         )
-        plus_btn.pack(side="left", padx=4, pady=2)  # Reduced padding
+        plus_btn.pack(side="left", padx=4, pady=2)
         
         # Search button
         search_btn = ctk.CTkButton(
             search_frame,
             text="Search",
-            height=28,  # Reduced height
-            width=110,  # Reduced width
+            height=28,
+            width=110,
             corner_radius=18,
             fg_color="#DC2626",
             hover_color="#B91C1C",
-            font=("Inter", 12, "bold"),  # Reduced font size
+            font=("Inter", 12, "bold"),
             command=self.perform_search
         )
-        search_btn.pack(anchor="w", pady=5) # Reduced padding
+        search_btn.pack(anchor="w", pady=5)
         
         # Results section with reduced spacing
         self.create_results_section(main_container)
@@ -227,7 +227,7 @@ class HomePage(ctk.CTkScrollableFrame):
         buttons = {
             "KMP": self.kmp_btn,
             "BM": self.bm_btn,
-            "Fuzzy": self.fuzzy_btn
+            "Aho-Corasick": self.aho_corasick_btn
         }
         
         for name, btn in buttons.items():
@@ -251,7 +251,7 @@ class HomePage(ctk.CTkScrollableFrame):
             self.count_label.configure(text=str(current - 1))
     
     def perform_search(self):
-        """Handle search button click - now with real KMP integration"""
+        """Handle search button click - now with all algorithm integration"""
         keywords = self.search_entry.get().strip()
         algorithm = self.selected_algorithm.get()
         top_matches = self.matches_count.get()
@@ -304,19 +304,19 @@ class HomePage(ctk.CTkScrollableFrame):
         results_label = ctk.CTkLabel(
             results_container,
             text="Results",
-            font=("Inter", 20, "bold"),  # Reduced font size
+            font=("Inter", 20, "bold"),
             text_color="white"
         )
-        results_label.pack(pady=(0, 8))  # Reduced padding
+        results_label.pack(pady=(0, 8))
         
         # Results summary
         self.results_summary = ctk.CTkLabel(
             results_container,
             text="Enter keywords and click search to find matching CVs",
-            font=("Inter", 12),  # Reduced font size
+            font=("Inter", 12),
             text_color="#E5E7EB"
         )
-        self.results_summary.pack(pady=(0, 15))  # Reduced padding
+        self.results_summary.pack(pady=(0, 15))
         
         # Results grid container with adjusted spacing
         self.results_grid = ctk.CTkFrame(results_container, fg_color="transparent")
@@ -324,10 +324,10 @@ class HomePage(ctk.CTkScrollableFrame):
         
         # Configure grid columns to be responsive with adjusted minimum size
         for i in range(3):
-            self.results_grid.grid_columnconfigure(i, weight=1, minsize=180)  # Reduced minsize
+            self.results_grid.grid_columnconfigure(i, weight=1, minsize=180)
     
     def display_search_results(self, results):
-        """Display real search results from KMP algorithm"""
+        """Display search results with algorithm information"""
         # Clear existing results
         self.clear_results_grid()
         
@@ -338,7 +338,12 @@ class HomePage(ctk.CTkScrollableFrame):
         total_cvs = summary['total_cvs_searched']
         matches = summary['cvs_with_matches']
         
-        summary_text = f"{algorithm}: {matches}/{total_cvs} CVs matched in {time_ms}ms"
+        # Check if fallback was used
+        if "→" in algorithm:
+            summary_text = f"{algorithm}: {matches}/{total_cvs} CVs matched in {time_ms}ms (fallback used)"
+        else:
+            summary_text = f"{algorithm}: {matches}/{total_cvs} CVs matched in {time_ms}ms"
+        
         self.results_summary.configure(text=summary_text)
         
         # Display result cards
@@ -373,8 +378,8 @@ class HomePage(ctk.CTkScrollableFrame):
         """Create a result card with real data from search"""
         card = ctk.CTkFrame(
             self.results_grid,
-            width=180,  # Reduced width
-            height=180,  # Reduced height
+            width=180,
+            height=180,
             fg_color="#F5E2C8",
             corner_radius=15
         )
@@ -389,7 +394,7 @@ class HomePage(ctk.CTkScrollableFrame):
         name_label = ctk.CTkLabel(
             card,
             text=result["name"],
-            font=("Inter", 16, "bold"),  # Slightly smaller
+            font=("Inter", 16, "bold"),
             text_color="#7C2D12"
         )
         name_label.pack(pady=(15, 5))
@@ -427,7 +432,7 @@ class HomePage(ctk.CTkScrollableFrame):
             keyword_label = ctk.CTkLabel(
                 keywords_frame,
                 text=keyword,
-                font=("Inter", 9),  # Smaller font
+                font=("Inter", 9),
                 text_color="#92400E"
             )
             keyword_label.pack(anchor="w", pady=1)

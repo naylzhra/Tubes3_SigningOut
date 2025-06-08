@@ -1,12 +1,13 @@
-# cv_summary_window.py
+# cv_summary_window.py - Updated with Database Integration
 import customtkinter as ctk
 from tkinter import messagebox
 import os
 from PIL import Image
 
 class CVSummaryWindow:
-    def __init__(self, parent, cv_data=None):
+    def __init__(self, parent, cv_data=None, search_controller=None):
         self.parent = parent
+        self.search_controller = search_controller
         self.cv_data = cv_data or self.get_sample_data()
         
         # Create the window
@@ -158,12 +159,16 @@ class CVSummaryWindow:
         )
         name_label.pack(fill="x", pady=(0, 8))
         
-        # Personal details
+        # Personal details - Updated to include email and role
         details_text = f"""Birthdate    : {self.cv_data['birthdate']}
         
 Address      : {self.cv_data['address']}
 
-Phone          : {self.cv_data['phone']}"""
+Phone          : {self.cv_data['phone']}
+
+Email            : {self.cv_data.get('email', 'N/A')}
+
+Role             : {self.cv_data.get('role', 'N/A')}"""
         
         details_label = ctk.CTkLabel(
             card_content,
@@ -441,72 +446,144 @@ Phone          : {self.cv_data['phone']}"""
         self.window.destroy()
     
     def view_cv_file(self):
-        """Handle view CV file action"""
+        """Handle view CV file action - now integrated with search controller"""
+        if self.search_controller and hasattr(self.cv_data, 'cv_id'):
+            # Get CV ID from data
+            cv_id = getattr(self.cv_data, 'cv_id', None)
+            if cv_id:
+                try:
+                    # Get CV file path from search controller
+                    cv_file_path = self.search_controller.get_cv_file_path(cv_id)
+                    if cv_file_path:
+                        # Open the CV file
+                        self.open_cv_file(cv_file_path)
+                        return
+                except Exception as e:
+                    print(f"Error getting CV file: {e}")
+        
+        # Fallback message
         messagebox.showinfo(
             "View CV File", 
             f"Opening CV file for {self.cv_data['name']}...\n\nThis feature will open the original CV document."
         )
-        # Here you would implement the actual CV file viewing logic
-        # For example: opening a PDF viewer or document viewer
+    
+    def open_cv_file(self, cv_file_path):
+        """Open CV file using system default application"""
+        try:
+            import os
+            import platform
+            from pathlib import Path
+            
+            # Convert to absolute path if needed
+            if not os.path.isabs(cv_file_path):
+                # Try to find the file in project directory
+                current_dir = Path(__file__).resolve().parent
+                project_root = current_dir.parent.parent
+                full_path = project_root / cv_file_path
+            else:
+                full_path = Path(cv_file_path)
+            
+            if not full_path.exists():
+                messagebox.showerror("File Not Found", f"CV file not found:\n{full_path}")
+                return
+            
+            # Open with system default application
+            system = platform.system()
+            if system == "Windows":
+                os.startfile(str(full_path))
+            elif system == "Darwin":  # macOS
+                os.system(f"open '{full_path}'")
+            elif system == "Linux":
+                os.system(f"xdg-open '{full_path}'")
+            else:
+                messagebox.showinfo("File Found", f"CV file located at:\n{full_path}")
+            
+            print(f"Opened CV file: {full_path}")
+            
+        except Exception as e:
+            print(f"Error opening CV file: {e}")
+            messagebox.showerror("Error", f"Could not open CV file: {str(e)}")
     
     def get_sample_data(self):
         """Return sample CV data for testing"""
         return {
-            "name": "Naylaaaa",
-            "birthdate": "HH-MM-YYYY",
-            "address": "Labtek V",
-            "phone": "XXXX - XXXX - XXXX",
+            "name": "Sample Applicant",
+            "birthdate": "01-01-1990",
+            "address": "Sample Address",
+            "phone": "1234567890",
+            "email": "sample@email.com",
+            "role": "Software Engineer",
             "skills": ["Python", "Java", "React", "Node.js", "SQL", "Git", "Docker", "AWS"],
             "job_history": [
                 {
                     "title": "Senior Software Engineer",
                     "period": "2020 - 2024",
-                    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi."
-                },
-                {
-                    "title": "Full Stack Developer", 
-                    "period": "2018 - 2020",
-                    "description": "Developed and maintained web applications using modern frameworks. Collaborated with cross-functional teams to deliver high-quality software solutions."
+                    "description": "Developed and maintained software applications using modern technologies and frameworks."
                 }
             ],
             "education": [
                 {
-                    "degree": "Master of Computer Science - MIT",
-                    "period": "2020 - 2024"
-                },
-                {
-                    "degree": "Bachelor of Information Technology - Stanford University",
+                    "degree": "Bachelor of Computer Science",
                     "period": "2016 - 2020"
                 }
             ]
         }
 
-# Example usage and integration with main window
+# Updated integration class with database support
 class CVSummaryIntegration:
-    """Helper class to integrate CV Summary with main application"""
+    """Helper class to integrate CV Summary with main application and database"""
     
     @staticmethod
-    def show_cv_summary(parent_window, cv_data=None):
-        """Show CV summary window"""
+    def show_cv_summary(parent_window, cv_data=None, search_controller=None):
+        """Show CV summary window with database integration"""
         try:
-            summary_window = CVSummaryWindow(parent_window, cv_data)
+            summary_window = CVSummaryWindow(parent_window, cv_data, search_controller)
             return summary_window
         except Exception as e:
             messagebox.showerror("Error", f"Could not open CV Summary: {str(e)}")
             return None
     
     @staticmethod
+    def format_cv_data_from_database(search_controller, cv_id):
+        """Format CV data from database for the summary window"""
+        try:
+            if search_controller and hasattr(search_controller, 'get_applicant_summary_data'):
+                # Get data from database via search controller
+                detail_id = int(cv_id.split('_')[1]) if cv_id.startswith('cv_') else int(cv_id)
+                summary_data = search_controller.get_applicant_summary_data(detail_id)
+                
+                # Add cv_id for file viewing
+                class CVDataWithID:
+                    def __init__(self, data, cv_id):
+                        self.cv_id = cv_id
+                        for key, value in data.items():
+                            setattr(self, key, value)
+                    
+                    def __getitem__(self, key):
+                        return getattr(self, key, "N/A")
+                    
+                    def get(self, key, default=None):
+                        return getattr(self, key, default)
+                
+                return CVDataWithID(summary_data, cv_id)
+            else:
+                return None
+        except Exception as e:
+            print(f"Error formatting CV data from database: {e}")
+            return None
+    
+    @staticmethod
     def format_cv_data(raw_cv_data):
-        """Format raw CV data for the summary window"""
-        # This method would convert your database/search results 
-        # into the format expected by CVSummaryWindow
+        """Format raw CV data for the summary window (fallback method)"""
         formatted_data = {
-            "name": raw_cv_data.get("full_name", "N/A"),
-            "birthdate": raw_cv_data.get("birth_date", "N/A"),
-            "address": raw_cv_data.get("address", "N/A"),
-            "phone": raw_cv_data.get("phone_number", "N/A"),
+            "name": raw_cv_data.get("full_name", raw_cv_data.get("name", "N/A")),
+            "birthdate": raw_cv_data.get("birth_date", raw_cv_data.get("birthdate", "N/A")),
+            "address": raw_cv_data.get("address", raw_cv_data.get("applicant_address", "N/A")),
+            "phone": raw_cv_data.get("phone_number", raw_cv_data.get("phone", "N/A")),
+            "email": raw_cv_data.get("email", "N/A"),
+            "role": raw_cv_data.get("role", raw_cv_data.get("applicant_role", "N/A")),
             "skills": raw_cv_data.get("skills", []),
-            "job_history": raw_cv_data.get("work_experience", []),
+            "job_history": raw_cv_data.get("work_experience", raw_cv_data.get("job_history", [])),
             "education": raw_cv_data.get("education", [])
         }
         return formatted_data

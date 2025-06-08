@@ -1,6 +1,6 @@
-# controller/searcher.py
+# controller/searcher.py - Enhanced with database summary integration
 """
-Fixed Search Controller with absolute imports
+Enhanced Search Controller with database summary integration
 """
 
 import sys
@@ -277,19 +277,19 @@ class SearchController:
         """Get list of available CV IDs"""
         return list(self.cv_database.keys()) if self.cv_database else []
     
-    def get_applicant_summary_data(self, cv_id):
-        """Get applicant data formatted for summary window"""
+    def get_applicant_summary_data(self, detail_id):
+        """Get applicant data formatted for summary window - ENHANCED"""
         try:
-            detail_id = int(cv_id.split('_')[1])
-            
             if self.cv_data_manager:
+                # Use enhanced data manager to get comprehensive summary data
                 summary_data = self.cv_data_manager.get_applicant_summary_data(detail_id)
+                print(f"Retrieved summary data for detail_id {detail_id}: {summary_data['name']}")
                 return summary_data
             else:
                 return self.get_fallback_summary_data()
             
         except Exception as e:
-            print(f"Error getting summary data for {cv_id}: {e}")
+            print(f"Error getting summary data for detail_id {detail_id}: {e}")
             return self.get_fallback_summary_data()
     
     def get_fallback_summary_data(self):
@@ -330,6 +330,28 @@ class SearchController:
         if self.cv_data_manager:
             self.cv_data_manager.clear_cache()
             self._initialize_cv_database()
+    
+    def get_cv_summary_by_id(self, cv_id):
+        """Get CV summary data by CV ID - for direct integration"""
+        try:
+            detail_id = int(cv_id.split('_')[1]) if cv_id.startswith('cv_') else int(cv_id)
+            return self.get_applicant_summary_data(detail_id)
+        except Exception as e:
+            print(f"Error getting CV summary for {cv_id}: {e}")
+            return self.get_fallback_summary_data()
+    
+    def get_search_statistics(self):
+        """Get search system statistics"""
+        return {
+            "total_cvs": len(self.cv_database),
+            "cached_applicants": len(self.applicant_data_cache),
+            "available_algorithms": {
+                "KMP": search_cvs_with_kmp is not None,
+                "Boyer-Moore": search_cvs_boyer_moore is not None,
+                "Aho-Corasick": search_cvs_with_aho_corasick is not None,
+                "Levenshtein": search_cvs_with_levenshtein is not None
+            }
+        }
 
 # Test function
 if __name__ == "__main__":
@@ -340,6 +362,19 @@ if __name__ == "__main__":
     else:
         print(f"Controller ready with {len(controller.cv_database)} CVs")
         
-        # Quick test
+        # Test search statistics
+        stats = controller.get_search_statistics()
+        print(f"Search statistics: {stats}")
+        
+        # Test summary data retrieval
+        if controller.cv_database:
+            first_cv_id = list(controller.cv_database.keys())[0]
+            detail_id = int(first_cv_id.split('_')[1])
+            
+            print(f"\nTesting summary data for {first_cv_id}...")
+            summary_data = controller.get_applicant_summary_data(detail_id)
+            print(f"Summary: {summary_data['name']} - {len(summary_data['skills'])} skills, {len(summary_data['job_history'])} jobs")
+        
+        # Quick test search
         test_results = controller.search_cvs("python", "KMP", 3)
         print(f"Test search found {len(test_results['results'])} results")

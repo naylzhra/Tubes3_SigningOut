@@ -273,23 +273,48 @@ class MainWindow(ctk.CTk):
         print("Search simulation completed")
     
     def show_cv_summary(self, cv_index):
-        """Show CV summary window using dummy data"""        
+        """Show CV summary window using database data"""        
         print(f"Main Window - Show summary for CV {cv_index}")
         
         try:
-            # Always use dummy data for summary (as requested)
+            # Try to get real data from database first
+            if self.search_controller and hasattr(self.search_controller, 'cv_database'):
+                cv_ids = list(self.search_controller.cv_database.keys())
+                if 0 <= cv_index < len(cv_ids):
+                    cv_id = cv_ids[cv_index]
+                    
+                    # Get formatted CV data from database
+                    cv_data = CVSummaryIntegration.format_cv_data_from_database(
+                        self.search_controller, cv_id
+                    )
+                    
+                    if cv_data:
+                        # Show summary window with real database data
+                        summary_window = CVSummaryIntegration.show_cv_summary(
+                            self, cv_data, self.search_controller
+                        )
+                        
+                        if summary_window:
+                            print(f"CV Summary window opened for CV {cv_id} with database data")
+                        return
+                    else:
+                        print(f"Could not get database data for {cv_id}, using dummy data")
+            
+            # Fallback to dummy data if database data not available
             cv_data = self.get_dummy_cv_data(cv_index)
             
             # Show summary window using the integration class
-            summary_window = CVSummaryIntegration.show_cv_summary(self, cv_data)
+            summary_window = CVSummaryIntegration.show_cv_summary(
+                self, cv_data, self.search_controller
+            )
             
             if summary_window:
-                print(f"CV Summary window opened for CV {cv_index}")
+                print(f"CV Summary window opened for CV {cv_index} with dummy data")
             
         except Exception as e:
             print(f"Error showing CV summary: {e}")
             self.show_error_dialog("CV Summary Error", f"Could not open CV summary: {str(e)}")
-    
+            
     def view_cv_file(self, cv_index):
         """Open CV file viewer - show actual PDF from database"""
         print(f"Main Window - View CV file {cv_index}")

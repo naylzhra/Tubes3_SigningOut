@@ -1,4 +1,4 @@
-# home_page.py
+# home_page.py - Enhanced with database summary integration
 import customtkinter as ctk
 
 class HomePage(ctk.CTkScrollableFrame):
@@ -49,6 +49,19 @@ class HomePage(ctk.CTkScrollableFrame):
                         "algorithm_used": algorithm,
                         "keywords_searched": 0
                     }
+                }
+            
+            def get_cv_summary_by_id(self, cv_id):
+                return {
+                    "name": "Mock Applicant",
+                    "birthdate": "01-01-1990",
+                    "address": "Mock Address",
+                    "phone": "1234567890",
+                    "email": "mock@email.com",
+                    "role": "Software Engineer",
+                    "skills": ["Python", "JavaScript"],
+                    "job_history": [],
+                    "education": []
                 }
         return MockController()
         
@@ -273,7 +286,14 @@ class HomePage(ctk.CTkScrollableFrame):
             self.current_results = results
             self.display_search_results(results)
             
-            print(f"Search completed: {results['summary']}")
+            algorithm_used = results['summary']['algorithm_used']
+            result_count = len(results['results'])
+            
+            print(f"{algorithm_used} Search completed: {result_count} results found")
+            
+            # Log fallback usage if applicable
+            if "→" in algorithm_used:
+                print(f"Fallback mechanism activated: {algorithm_used}")
             
         except Exception as e:
             print(f"Search error: {e}")
@@ -476,15 +496,54 @@ class HomePage(ctk.CTkScrollableFrame):
         self.show_summary(cv_id)
     
     def show_summary(self, cv_id):
-        """Show CV summary - navigate to summary window"""
+        """Show CV summary - navigate to summary window with database integration"""
         print(f"Showing summary for CV: {cv_id}")
         
-        if self.main_window:
-            # Convert CV ID to index for compatibility with existing summary system
-            cv_index = self.cv_id_to_index(cv_id)
-            self.main_window.show_cv_summary(cv_index)
+        if self.main_window and self.search_controller:
+            try:
+                # Get real data from database using search controller
+                summary_data = self.search_controller.get_cv_summary_by_id(cv_id)
+                
+                if summary_data:
+                    # Import CVSummaryIntegration for showing summary
+                    from .cv_summary_window import CVSummaryIntegration
+                    
+                    # Create data object with CV ID for file viewing
+                    class CVDataWithID:
+                        def __init__(self, data, cv_id):
+                            self.cv_id = cv_id
+                            for key, value in data.items():
+                                setattr(self, key, value)
+                        
+                        def __getitem__(self, key):
+                            return getattr(self, key, "N/A")
+                        
+                        def get(self, key, default=None):
+                            return getattr(self, key, default)
+                    
+                    # Create enhanced data object
+                    enhanced_data = CVDataWithID(summary_data, cv_id)
+                    
+                    # Show summary window with database data
+                    summary_window = CVSummaryIntegration.show_cv_summary(
+                        self.main_window, enhanced_data, self.search_controller
+                    )
+                    
+                    if summary_window:
+                        print(f"CV Summary window opened for {cv_id} with database data")
+                    
+                else:
+                    # Fallback to index-based method
+                    cv_index = self.cv_id_to_index(cv_id)
+                    self.main_window.show_cv_summary(cv_index)
+                    
+            except Exception as e:
+                print(f"Error showing database summary: {e}")
+                # Fallback to original method
+                cv_index = self.cv_id_to_index(cv_id)
+                self.main_window.show_cv_summary(cv_index)
         else:
-            print("Warning: Main window reference not set")
+            print("Warning: Main window or search controller reference not set")
     
     def view_cv(self, cv_id):
         """View full CV content"""

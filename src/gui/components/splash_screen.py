@@ -10,23 +10,18 @@ class SplashScreen(ctk.CTkToplevel):
         super().__init__(parent)
         self.on_start_callback = on_start_callback
         
-        # Configure window
         self.title("SignHire")
         self.geometry("800x600")
-        self.configure(fg_color="#18206F")  # Purple background
+        self.configure(fg_color="#18206F") 
         self.resizable(False, False)
-        
-        # Center the window relative to screen
         self.center_window()
         
-        # Make it modal
-        self.transient(parent)
+        self.transient(parent) # atas jendela utama
         self.grab_set()
         
         self.setup_ui()
     
     def center_window(self):
-        """Center window on screen"""
         self.update_idletasks()
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
@@ -35,29 +30,22 @@ class SplashScreen(ctk.CTkToplevel):
         self.geometry(f"800x600+{x}+{y}")
     
     def setup_ui(self):
-        """Setup splash screen UI components"""
-        # Main container
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True)
         
-        # Configure grid weights untuk layout yang seimbang
         main_frame.grid_rowconfigure(0, weight=1)
-        main_frame.grid_columnconfigure(0, weight=2)  # Left section lebih besar
-        main_frame.grid_columnconfigure(1, weight=1)  # Right section lebih kecil
+        main_frame.grid_columnconfigure(0, weight=2) 
+        main_frame.grid_columnconfigure(1, weight=1)  
         
-        # Left section - Text content (center-aligned)
         left_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         left_frame.grid(row=0, column=0, sticky="nsew", padx=(60, 20), pady=40)
         
-        # Center container untuk text
         center_container = ctk.CTkFrame(left_frame, fg_color="transparent")
         center_container.pack(expand=True, fill="both")
         
-        # Text content frame yang akan di-center
         text_frame = ctk.CTkFrame(center_container, fg_color="transparent")
         text_frame.pack(expand=True)
         
-        # Tagline
         tagline = ctk.CTkLabel(
             text_frame,
             text="Where CVs Turn into Careers.",
@@ -66,7 +54,6 @@ class SplashScreen(ctk.CTkToplevel):
         )
         tagline.pack(pady=(0, 20), anchor="center")
         
-        # App name
         app_name = ctk.CTkLabel(
             text_frame,
             text="SignHire",
@@ -75,7 +62,6 @@ class SplashScreen(ctk.CTkToplevel):
         )
         app_name.pack(pady=(0, 10), anchor="center")
         
-        # Powered by
         powered_by = ctk.CTkLabel(
             text_frame,
             text="Powered by SigningOut",
@@ -84,7 +70,6 @@ class SplashScreen(ctk.CTkToplevel):
         )
         powered_by.pack(pady=(0, 30), anchor="center")
         
-        # Start button
         start_button = ctk.CTkButton(
             text_frame,
             text="Start",
@@ -99,35 +84,26 @@ class SplashScreen(ctk.CTkToplevel):
         )
         start_button.pack(anchor="center")
         
-        # Right section - Image (fixed position)
         right_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         right_frame.grid(row=0, column=1, sticky="nsew", padx=(20, 40), pady=40)
         
-        # Image container yang di-center di right frame
         image_container = ctk.CTkFrame(right_frame, fg_color="transparent")
         image_container.pack(expand=True, fill="both")
         
         self.load_image(image_container)
     
     def load_image(self, parent):
-        """Load and display image in fixed position"""
         try:
-            # Load image
             img = Image.open(ASSETS_PATH)
             
-            # Resize dengan mempertahankan aspect ratio
-            # Tentukan ukuran maksimal
             max_width, max_height = 250, 250
             img.thumbnail((max_width, max_height), Image.LANCZOS)
             
-            # Create CTkImage
             ctk_img = ctk.CTkImage(
                 light_image=img, 
                 dark_image=img, 
-                size=img.size  # Gunakan ukuran asli setelah resize
+                size=img.size  
             )
-            
-            # Create label and center it
             label = ctk.CTkLabel(
                 parent, 
                 image=ctk_img, 
@@ -135,15 +111,12 @@ class SplashScreen(ctk.CTkToplevel):
             )
             label.pack(expand=True, anchor="center")
             
-            # Keep reference to prevent garbage collection
             label.image = ctk_img
-            
         except Exception as e:
             print(f"Failed to load image: {e}")
-            # Fallback jika gambar tidak bisa dimuat
             fallback = ctk.CTkLabel(
                 parent, 
-                text="🖼️\n(Image not found)", 
+                text="(Image not found)", 
                 text_color="white",
                 font=("Inter", 16),
                 justify="center"
@@ -151,6 +124,5 @@ class SplashScreen(ctk.CTkToplevel):
             fallback.pack(expand=True, anchor="center")
     
     def on_start_click(self):
-        """Handle start button click"""
         self.destroy()
         self.on_start_callback()

@@ -20,23 +20,44 @@ def boyer_moore_search(text: str, pattern: str) -> list:
             s += m - last.get(text[s + m], -1) if s + m < n else 1
         else:
             s += max(1, j - last.get(text[s + j], -1))
+    
     return matches
 
+def boyer_moore_search_keyword_list(text: str, keywords: list) -> dict:
+    result = {}
+    
+    text_lower = text.lower()
+    
+    for keyword in keywords:
+        if not keyword or not keyword.strip():
+            continue
+            
+        keyword_lower = keyword.lower().strip()
+        
+        occurrences = boyer_moore_search(text_lower, keyword_lower)
+        result[keyword] = len(occurrences)
+        
+        # Untuk debug
+        # print(f"Boyer-Moore - Keyword '{keyword}': {len(occurrences)} occurrences found")
+        # if occurrences:
+        #     print(f"  Positions: {occurrences[:5]}{'...' if len(occurrences) > 5 else ''}")
+    
+    return result
 
-def boyer_moore_with_cv_info(cv_database: dict, keyword: list) -> dict:
+def boyer_moore_with_cv_info(cv_database: dict, keywords: list) -> dict:
     results = {
-        "matches": {},
-        "cv_scores": {},
-        "keyword_positions": {},
-        "ranked_cvs": [],
+        "matches": {},  
+        "cv_scores": {},  
+        "keyword_positions": {},  
+        "ranked_cvs": [], 
         "search_summary": {
             "total_cvs_searched": len(cv_database),
-            "keywords_searched": keyword,
+            "keywords_searched": keywords,
             "cvs_with_matches": 0
         }
     }
 
-    keywords_lower = [kw.lower().strip() for kw in keyword if kw.strip()]
+    keywords_lower = [kw.lower().strip() for kw in keywords if kw.strip()]
 
     for cv_id, cv_content in cv_database.items():
         cv_content_lower = cv_content.lower()
@@ -51,7 +72,7 @@ def boyer_moore_with_cv_info(cv_database: dict, keyword: list) -> dict:
             positions = boyer_moore_search(cv_content_lower, word)
             count = len(positions)
 
-            original_word = next((kw for kw in keyword if kw.lower().strip() == word), word)
+            original_word = next((kw for kw in keywords if kw.lower().strip() == word), word)
             cv_matches[original_word] = count
             cv_positions[original_word] = positions
             total_score += count
@@ -69,13 +90,13 @@ def boyer_moore_with_cv_info(cv_database: dict, keyword: list) -> dict:
 
     return results
 
-
 def search_cvs_boyer_moore(cv_database: dict, keywords: list, top_n: int = 5) -> list:
     search_results = boyer_moore_with_cv_info(cv_database, keywords)
+    
     detailed_results = []
 
     for cv_id, score in search_results["ranked_cvs"][:top_n]:
-        if score == 0:
+        if score == 0:  
             continue
 
         cv_result = {
@@ -96,7 +117,7 @@ def search_cvs_boyer_moore(cv_database: dict, keywords: list, top_n: int = 5) ->
                 cv_result["match_summary"].append({
                     "keyword": keyword,
                     "count": count,
-                    "positions": positions[:3]
+                    "positions": positions[:3]  
                 })
 
         detailed_results.append(cv_result)

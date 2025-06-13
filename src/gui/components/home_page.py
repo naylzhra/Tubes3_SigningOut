@@ -1,4 +1,3 @@
-# home_page.py
 import customtkinter as ctk
 
 class HomePage(ctk.CTkScrollableFrame):
@@ -6,65 +5,32 @@ class HomePage(ctk.CTkScrollableFrame):
         super().__init__(parent, **kwargs)
         self.pack(fill="both", expand=True)
         
-        # Initialize variables
         self.selected_algorithm = ctk.StringVar(value="KMP")
         self.matches_count = ctk.IntVar(value=5)  # Default to 5
         
-        # Reference to main window for navigation
         self.main_window = None
-        
-        # Search controller
         self.search_controller = None
-        
-        # Current search results
         self.current_results = []
-        
-        # Setup UI
         self.setup_ui()
     
     def set_main_window(self, main_window):
-        """Set reference to main window for navigation"""
         self.main_window = main_window
-        
-        # Initialize search controller
         try:
             from controller.searcher import SearchController
             self.search_controller = SearchController()
             print("Search controller initialized successfully")
         except Exception as e:
             print(f"Error initializing search controller: {e}")
-            # Create a mock controller for testing
-            self.search_controller = self.create_mock_controller()
-    
-    def create_mock_controller(self):
-        """Create mock controller if real one fails"""
-        class MockController:
-            def search_cvs(self, keywords, algorithm, top_n):
-                return {
-                    "results": [],
-                    "summary": {
-                        "total_cvs_searched": 6,
-                        "cvs_with_matches": 0,
-                        "search_time_ms": 0,
-                        "algorithm_used": algorithm,
-                        "keywords_searched": 0
-                    }
-                }
-        return MockController()
         
     def setup_ui(self):
-        """Setup home page UI components"""
         self.configure(fg_color="transparent")
         
-        # Main container with adjusted spacing
         main_container = ctk.CTkFrame(self, fg_color="transparent")
         main_container.pack(fill="both", expand=True, padx=15, pady=5)
         
-        # Search section with compact layout
         search_frame = ctk.CTkFrame(main_container, fg_color="transparent")
         search_frame.pack(fill="x", pady=(0, 10))
         
-        # Keywords
         keywords_label = ctk.CTkLabel(
             search_frame,
             text="Keywords (separate with commas or spaces):",
@@ -73,7 +39,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         keywords_label.pack(anchor="w", pady=(0, 3))
         
-        # Search entry with example placeholder
         self.search_entry = ctk.CTkEntry(
             search_frame,
             placeholder_text="e.g. python, javascript, react",
@@ -87,7 +52,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         self.search_entry.pack(anchor="w", pady=(0, 12))
         
-        # Algorithm selection
         algo_label = ctk.CTkLabel(
             search_frame,
             text="Search Algorithm:",
@@ -96,11 +60,9 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         algo_label.pack(anchor="w", pady=(0, 8))
         
-        # Algorithm buttons frame
         algo_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
         algo_frame.pack(anchor="w", pady=(0, 12))
         
-        # KMP Button
         self.kmp_btn = ctk.CTkButton(
             algo_frame,
             text="KMP",
@@ -115,7 +77,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         self.kmp_btn.pack(side="left", padx=(0, 8))
         
-        # BM Button
         self.bm_btn = ctk.CTkButton(
             algo_frame,
             text="BM",
@@ -132,7 +93,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         self.bm_btn.pack(side="left", padx=(0, 8))
         
-        # Aho-Corasick Button (previously Fuzzy Matching)
         self.aho_corasick_btn = ctk.CTkButton(
             algo_frame,
             text="Aho-Corasick",
@@ -149,7 +109,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         self.aho_corasick_btn.pack(side="left")
         
-        # Top Matches section
         matches_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
         matches_frame.pack(anchor="w", pady=(0, 12))
         
@@ -161,7 +120,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         matches_label.pack(side="left", padx=(0, 15), pady=10)
         
-        # Counter frame
         counter_frame = ctk.CTkFrame(matches_frame, fg_color="#F5E2C8", height=28, corner_radius=16)
         counter_frame.pack(side="left")
         
@@ -181,7 +139,7 @@ class HomePage(ctk.CTkScrollableFrame):
         
         self.count_label = ctk.CTkLabel(
             counter_frame,
-            text="5",  # Default value
+            text="5",
             font=("Inter", 13, "bold"),
             text_color="#7C2D12",
             width=25
@@ -202,7 +160,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         plus_btn.pack(side="left", padx=4, pady=2)
         
-        # Search button
         search_btn = ctk.CTkButton(
             search_frame,
             text="Search",
@@ -216,14 +173,11 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         search_btn.pack(anchor="w", pady=5)
         
-        # Results section with reduced spacing
         self.create_results_section(main_container)
     
     def select_algorithm(self, algorithm):
-        """Handle algorithm button selection"""
         self.selected_algorithm.set(algorithm)
         
-        # Update button styles
         buttons = {
             "KMP": self.kmp_btn,
             "BM": self.bm_btn,
@@ -237,21 +191,18 @@ class HomePage(ctk.CTkScrollableFrame):
                 btn.configure(fg_color="transparent", text_color="white", border_width=2, border_color="#F5E2C8")
     
     def increase_matches(self):
-        """Increase matches count"""
         current = self.matches_count.get()
-        if current < 50:  # Set max limit
+        if current < 50:  # limit
             self.matches_count.set(current + 1)
             self.count_label.configure(text=str(current + 1))
     
     def decrease_matches(self):
-        """Decrease matches count"""
         current = self.matches_count.get()
-        if current > 1:  # Minimum 1
+        if current > 1: 
             self.matches_count.set(current - 1)
             self.count_label.configure(text=str(current - 1))
     
     def perform_search(self):
-        """Handle search button click - now with all algorithm integration"""
         keywords = self.search_entry.get().strip()
         algorithm = self.selected_algorithm.get()
         top_matches = self.matches_count.get()
@@ -266,23 +217,25 @@ class HomePage(ctk.CTkScrollableFrame):
             return
         
         try:
-            # Perform actual search using the controller
             results = self.search_controller.search_cvs(keywords, algorithm, top_matches)
             
-            # Store results and display them
             self.current_results = results
             self.display_search_results(results)
+            algorithm_used = results['summary']['algorithm_used']
+            result_count = len(results['results'])
             
-            print(f"Search completed: {results['summary']}")
+            print(f"{algorithm_used} Search completed: {result_count} results found")
+            
+            # Log fallback usage if applicable
+            if "→" in algorithm_used:
+                print(f"Fallback mechanism activated: {algorithm_used}")
             
         except Exception as e:
             print(f"Search error: {e}")
             self.show_error_message(f"Search failed: {str(e)}")
     
     def show_empty_results(self):
-        """Show empty results when no keywords provided"""
         self.results_summary.configure(text="Please enter keywords to search")
-        # Clear existing results
         self.clear_results_grid()
     
     def show_error_message(self, message):
@@ -291,16 +244,13 @@ class HomePage(ctk.CTkScrollableFrame):
         self.clear_results_grid()
     
     def clear_results_grid(self):
-        """Clear all result cards from grid"""
         for widget in self.results_grid.winfo_children():
             widget.destroy()
     
     def create_results_section(self, parent):
-        """Create the results display section"""
         results_container = ctk.CTkFrame(parent, fg_color="transparent")
         results_container.pack(fill="both", expand=True)
         
-        # Results header
         results_label = ctk.CTkLabel(
             results_container,
             text="Results",
@@ -309,7 +259,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         results_label.pack(pady=(0, 8))
         
-        # Results summary
         self.results_summary = ctk.CTkLabel(
             results_container,
             text="Enter keywords and click search to find matching CVs",
@@ -318,27 +267,21 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         self.results_summary.pack(pady=(0, 15))
         
-        # Results grid container with adjusted spacing
         self.results_grid = ctk.CTkFrame(results_container, fg_color="transparent")
         self.results_grid.pack(fill="both", expand=True)
         
-        # Configure grid columns to be responsive with adjusted minimum size
         for i in range(3):
             self.results_grid.grid_columnconfigure(i, weight=1, minsize=180)
     
     def display_search_results(self, results):
-        """Display search results with algorithm information"""
-        # Clear existing results
         self.clear_results_grid()
         
-        # Update summary
         summary = results['summary']
         algorithm = summary['algorithm_used']
         time_ms = summary['search_time_ms']
         total_cvs = summary['total_cvs_searched']
         matches = summary['cvs_with_matches']
         
-        # Check if fallback was used
         if "→" in algorithm:
             summary_text = f"{algorithm}: {matches}/{total_cvs} CVs matched in {time_ms}ms (fallback used)"
         else:
@@ -346,11 +289,9 @@ class HomePage(ctk.CTkScrollableFrame):
         
         self.results_summary.configure(text=summary_text)
         
-        # Display result cards
         search_results = results['results']
         
         if not search_results:
-            # Show no results message
             no_results_label = ctk.CTkLabel(
                 self.results_grid,
                 text="No matching CVs found.\nTry different keywords or algorithms.",
@@ -361,7 +302,6 @@ class HomePage(ctk.CTkScrollableFrame):
             no_results_label.grid(row=0, column=1, pady=50)
             return
         
-        # Show result cards in grid
         row = 0
         col = 0
         max_cols = 3
@@ -375,7 +315,6 @@ class HomePage(ctk.CTkScrollableFrame):
                 row += 1
     
     def create_real_result_card(self, result, row, col):
-        """Create a result card with real data from search"""
         card = ctk.CTkFrame(
             self.results_grid,
             width=180,
@@ -386,11 +325,10 @@ class HomePage(ctk.CTkScrollableFrame):
         card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
         card.grid_propagate(False)
         
-        # Make the entire card clickable
+        # clickable
         cv_id = result["cv_id"]
         card.bind("<Button-1>", lambda event, cv_id=cv_id: self.on_card_click(cv_id))
         
-        # Name (from search results)
         name_label = ctk.CTkLabel(
             card,
             text=result["name"],
@@ -400,7 +338,6 @@ class HomePage(ctk.CTkScrollableFrame):
         name_label.pack(pady=(15, 5))
         name_label.bind("<Button-1>", lambda event, cv_id=cv_id: self.on_card_click(cv_id))
         
-        # Matches count
         total_matches = result["total_matches"]
         matches_text = f"{total_matches} Match{'es' if total_matches != 1 else ''}"
         matches_label = ctk.CTkLabel(
@@ -412,7 +349,6 @@ class HomePage(ctk.CTkScrollableFrame):
         matches_label.pack(pady=(0, 10))
         matches_label.bind("<Button-1>", lambda event, cv_id=cv_id: self.on_card_click(cv_id))
         
-        # Keywords section
         keywords_frame = ctk.CTkFrame(card, fg_color="transparent")
         keywords_frame.pack(fill="x", padx=15, pady=(0, 15))
         keywords_frame.bind("<Button-1>", lambda event, cv_id=cv_id: self.on_card_click(cv_id))
@@ -426,8 +362,7 @@ class HomePage(ctk.CTkScrollableFrame):
         keywords_title.pack(anchor="w")
         keywords_title.bind("<Button-1>", lambda event, cv_id=cv_id: self.on_card_click(cv_id))
         
-        # Keywords list (limit to 3 for space)
-        matched_keywords = result["matched_keywords"][:3]  # Show max 3
+        matched_keywords = result["matched_keywords"][:3]  
         for keyword in matched_keywords:
             keyword_label = ctk.CTkLabel(
                 keywords_frame,
@@ -438,11 +373,9 @@ class HomePage(ctk.CTkScrollableFrame):
             keyword_label.pack(anchor="w", pady=1)
             keyword_label.bind("<Button-1>", lambda event, cv_id=cv_id: self.on_card_click(cv_id))
         
-        # Buttons frame
         buttons_frame = ctk.CTkFrame(card, fg_color="transparent")
         buttons_frame.pack(side="bottom", fill="x", padx=15, pady=15)
         
-        # Summary button
         summary_btn = ctk.CTkButton(
             buttons_frame,
             text="Summary",
@@ -456,7 +389,6 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         summary_btn.pack(side="left", padx=(0, 5))
         
-        # View CV button
         view_btn = ctk.CTkButton(
             buttons_frame,
             text="View CV",
@@ -471,23 +403,50 @@ class HomePage(ctk.CTkScrollableFrame):
         view_btn.pack(side="right")
     
     def on_card_click(self, cv_id):
-        """Handle card click - navigate to CV summary"""
         print(f"Card clicked for CV: {cv_id}")
-        self.show_summary(cv_id)
+        self.show_summary(cv_id) # refer ke summary
     
     def show_summary(self, cv_id):
-        """Show CV summary - navigate to summary window"""
         print(f"Showing summary for CV: {cv_id}")
         
-        if self.main_window:
-            # Convert CV ID to index for compatibility with existing summary system
-            cv_index = self.cv_id_to_index(cv_id)
-            self.main_window.show_cv_summary(cv_index)
+        if self.main_window and self.search_controller:
+            try:
+                summary_data = self.search_controller.get_cv_summary_by_id(cv_id)
+                
+                if summary_data:
+                    from .cv_summary_window import CVSummaryIntegration
+                    
+                    class CVDataWithID:
+                        def __init__(self, data, cv_id):
+                            self.cv_id = cv_id
+                            for key, value in data.items():
+                                setattr(self, key, value)
+                        
+                        def __getitem__(self, key):
+                            return getattr(self, key, "N/A")
+                        
+                        def get(self, key, default=None):
+                            return getattr(self, key, default)
+                    
+                    enhanced_data = CVDataWithID(summary_data, cv_id)
+                    
+                    summary_window = CVSummaryIntegration.show_cv_summary(
+                        self.main_window, enhanced_data, self.search_controller
+                    )
+                    
+                    if summary_window:
+                        print(f"CV Summary window opened for {cv_id} with database data")
+                    
+                else:
+                    print(f"Error showing summary: {e}")
+
+            except Exception as e:
+                print(f"Error showing database summary: {e}")
+                
         else:
-            print("Warning: Main window reference not set")
+            print("Warning: Main window or search controller reference not set")
     
     def view_cv(self, cv_id):
-        """View full CV content"""
         print(f"Viewing CV: {cv_id}")
         
         if self.search_controller:
@@ -502,24 +461,24 @@ class HomePage(ctk.CTkScrollableFrame):
             self.main_window.view_cv_file(cv_index)
     
     def cv_id_to_index(self, cv_id):
-        """Convert CV ID to index for compatibility"""
-        # Simple mapping for compatibility with existing summary system
-        cv_mapping = {
-            "cv_1": 0,
-            "cv_2": 1,
-            "cv_3": 2,
-            "cv_4": 3,
-            "cv_5": 4,
-            "cv_6": 5
-        }
-        return cv_mapping.get(cv_id, 0)
+        try:
+            if self.search_controller and hasattr(self.search_controller, 'cv_database'):
+                cv_ids = list(self.search_controller.cv_database.keys())
+                if cv_id in cv_ids:
+                    return cv_ids.index(cv_id)
+            
+            if cv_id.startswith('cv_'):
+                return int(cv_id.split('_')[1]) - 1
+            
+            return 0
+        except Exception as e:
+            print(f"Error converting CV ID to index: {e}")
+            return 0
     
     def show_cv_content_dialog(self, cv_id, content):
-        """Show CV content in a dialog"""
         if not self.main_window:
             return
             
-        # Create dialog window
         dialog = ctk.CTkToplevel(self.main_window)
         dialog.title(f"CV Content - {cv_id}")
         dialog.geometry("600x400")
@@ -527,13 +486,11 @@ class HomePage(ctk.CTkScrollableFrame):
         dialog.transient(self.main_window)
         dialog.grab_set()
         
-        # Center dialog
         dialog.update_idletasks()
         x = self.main_window.winfo_x() + 100
         y = self.main_window.winfo_y() + 100
         dialog.geometry(f"600x400+{x}+{y}")
         
-        # Content text widget
         text_widget = ctk.CTkTextbox(
             dialog,
             width=560,
@@ -544,11 +501,9 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         text_widget.pack(padx=20, pady=(20, 10))
         
-        # Insert content
         text_widget.insert("1.0", content)
-        text_widget.configure(state="disabled")  # Read-only
+        text_widget.configure(state="disabled") 
         
-        # Close button
         close_btn = ctk.CTkButton(
             dialog,
             text="Close",
@@ -558,14 +513,3 @@ class HomePage(ctk.CTkScrollableFrame):
         )
         close_btn.pack(pady=10)
     
-    def get_search_data(self):
-        """Get current search parameters"""
-        return {
-            'keywords': self.search_entry.get(),
-            'algorithm': self.selected_algorithm.get(),
-            'top_matches': self.matches_count.get()
-        }
-    
-    def get_current_results(self):
-        """Get current search results"""
-        return self.current_results

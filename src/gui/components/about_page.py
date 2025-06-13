@@ -8,47 +8,33 @@ class AboutPage(ctk.CTkScrollableFrame):
         super().__init__(parent, **kwargs)
         self.pack(fill="both", expand=True)
         
-        # Setup UI
         self.setup_ui()
         
     def setup_ui(self):
-        """Setup about page UI components"""
         self.configure(fg_color="transparent")
         
-        # Main container - no padding to reach edges
         main_container = ctk.CTkFrame(self, fg_color="transparent")
         main_container.pack(fill="both", expand=True)
         
-        # About Us Section
         self.create_about_us_section(main_container)
-        
-        # Why Our Platform Section
         self.create_why_platform_section(main_container)
-        
-        # Team Section
         self.create_team_section(main_container)
     
     def create_about_us_section(self, parent):
-        """Create About Us section with full width white background"""
-        # About Us container - full width dark blue background
         about_container = ctk.CTkFrame(parent, fg_color="#18206f", corner_radius=0)
         about_container.pack(fill="both", expand=True, pady=(0, 0))
 
-        # Inner content container
         inner_container = ctk.CTkFrame(about_container, fg_color="transparent")
         inner_container.pack(fill="both", expand=True, padx=40, pady=30)
 
-        # Main image placeholder - centered
         image_container = ctk.CTkFrame(inner_container, fg_color="transparent")
         image_container.pack(fill="x", pady=(0, 20))
 
         self.create_main_image(image_container)
 
-        # Content section with two columns
         content_section = ctk.CTkFrame(inner_container, fg_color="transparent")
         content_section.pack(fill="both", expand=True)
 
-        # Left column
         left_column = ctk.CTkFrame(content_section, fg_color="transparent")
         left_column.pack(side="left", fill="both", padx=(0, 30), expand=True)
 
@@ -59,11 +45,9 @@ class AboutPage(ctk.CTkScrollableFrame):
         divider = ctk.CTkFrame(divider_frame, width=2, fg_color="#E5E7EB")
         divider.pack(fill="y", padx=15)
 
-        # Right column
         right_column = ctk.CTkFrame(content_section, fg_color="transparent")
         right_column.pack(side="left", fill="both", expand=True)
 
-        # About Us title in left column (center-left)
         about_title = ctk.CTkLabel(
             left_column,
             text="About Us",
@@ -73,11 +57,9 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         about_title.pack(anchor="w", pady=(80, 0), padx=(10, 0))
 
-        # Right column content
         self.create_right_column_content(right_column)
 
     def create_main_image(self, parent):
-        """Create main image section - centered"""
         try:
             image_path = self.find_image_path("img3.png")
 
@@ -99,7 +81,6 @@ class AboutPage(ctk.CTkScrollableFrame):
                     height=200
                 )
                 image_label.pack(anchor="center")
-                print(f"Main image loaded successfully from: {image_path}")
             else:
                 self.create_placeholder_image_centered(parent, 200, 200)
 
@@ -108,7 +89,6 @@ class AboutPage(ctk.CTkScrollableFrame):
             self.create_placeholder_image_centered(parent, 200, 200)
 
     def create_placeholder_image_centered(self, parent, width, height):
-        """Create centered placeholder image when actual image is not found"""
         placeholder = ctk.CTkFrame(
             parent,
             width=width,
@@ -128,8 +108,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         placeholder_text.pack(expand=True)
 
     def create_right_column_content(self, parent):
-        """Create content for right column"""
-        # Main title
         main_title = ctk.CTkLabel(
             parent,
             text="SignHire - Professional ATS System",
@@ -140,7 +118,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         main_title.pack(anchor="w", fill="x", pady=(0, 8))
 
-        # Subtitle
         subtitle = ctk.CTkLabel(
             parent,
             text="Developed by Team SigningOut",
@@ -151,7 +128,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         subtitle.pack(anchor="w", fill="x", pady=(0, 20))
 
-        # Description
         description_text = (
             "SignHire is a comprehensive Applicant Tracking System (ATS) designed to "
             "revolutionize the recruitment process for HR professionals and recruiters. Our "
@@ -169,7 +145,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         description.pack(anchor="w", fill="x", pady=(0, 20))
 
-        # Features list
         features_text = "HR Departments • Recruitment Agencies • Talent Acquisition Teams • Corporate Recruiters"
         features = ctk.CTkLabel(
             parent,
@@ -182,16 +157,12 @@ class AboutPage(ctk.CTkScrollableFrame):
         features.pack(anchor="w", fill="x")
 
     def create_why_platform_section(self, parent):
-        """Create Why Our Platform section"""
-        # Platform section container - no top padding to connect with white section
         platform_container = ctk.CTkFrame(parent, fg_color="#18206F", corner_radius=0)
         platform_container.pack(fill="both", expand=True)
         
-        # Content with padding
         content_frame = ctk.CTkFrame(platform_container, fg_color="transparent")
         content_frame.pack(fill="both", expand=True, padx=40, pady=40)
         
-        # Section title
         title_label = ctk.CTkLabel(
             content_frame,
             text="Why Our Platform is\nYour Ideal Choice",
@@ -201,15 +172,12 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         title_label.pack(pady=(0, 30))
         
-        # Key Features container
         features_container = ctk.CTkFrame(content_frame, fg_color="#E8D5B7", corner_radius=15)
         features_container.pack(fill="x")
         
-        # Key Features content
         features_content = ctk.CTkFrame(features_container, fg_color="transparent")
         features_content.pack(fill="both", expand=True, padx=30, pady=25)
         
-        # Key Features label
         key_features_label = ctk.CTkLabel(
             features_content,
             text="Key Features",
@@ -219,20 +187,15 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         key_features_label.pack(anchor="w", pady=(0, 20))
         
-        # Features grid
         self.create_features_grid(features_content)
     
     def create_team_section(self, parent):
-        """Create Team section"""
-        # Team container - continuing purple background
         team_container = ctk.CTkFrame(parent, fg_color="#18206F", corner_radius=0)
         team_container.pack(fill="both", expand=True)
         
-        # Content with padding
         content_frame = ctk.CTkFrame(team_container, fg_color="transparent")
         content_frame.pack(fill="both", expand=True, padx=40, pady=40)
         
-        # Team title
         team_title = ctk.CTkLabel(
             content_frame,
             text="Team SigningOut",
@@ -241,7 +204,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         team_title.pack(pady=(0, 15))
         
-        # Team description
         team_desc = ctk.CTkLabel(
             content_frame,
             text="Transform your hiring process with SignHire - where\nintelligent algorithms meet intuitive design.",
@@ -252,16 +214,12 @@ class AboutPage(ctk.CTkScrollableFrame):
         team_desc.pack()
     
     def create_why_platform_section(self, parent):
-        """Create Why Our Platform section"""
-        # Platform section container - no top padding to connect with white section
         platform_container = ctk.CTkFrame(parent, fg_color="#18206F", corner_radius=0)
         platform_container.pack(fill="both", expand=True)
 
-        # Content with padding
         content_frame = ctk.CTkFrame(platform_container, fg_color="transparent")
         content_frame.pack(fill="both", expand=True, padx=40, pady=40)
 
-        # Section title
         title_label = ctk.CTkLabel(
             content_frame,
             text="Why Our Platform is\nYour Ideal Choice",
@@ -271,15 +229,12 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         title_label.pack(pady=(0, 30))
 
-        # Key Features container
         features_container = ctk.CTkFrame(content_frame, fg_color="#E8D5B7", corner_radius=15)
         features_container.pack(fill="x")
 
-        # Key Features content
         features_content = ctk.CTkFrame(features_container, fg_color="transparent")
         features_content.pack(fill="both", expand=True, padx=30, pady=25)
 
-        # Key Features label
         key_features_label = ctk.CTkLabel(
             features_content,
             text="Key Features",
@@ -289,20 +244,16 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         key_features_label.pack(anchor="w", pady=(0, 10))
 
-        # Features grid
         self.create_features_grid(features_content)
 
 
     def create_features_grid(self, parent):
-        """Create features grid with 4 items"""
         grid_frame = ctk.CTkFrame(parent, fg_color="transparent")
         grid_frame.pack(fill="x")
 
-        # Configure grid
         for i in range(4):
             grid_frame.grid_columnconfigure(i, weight=1, minsize=150)
 
-        # Features data with specific image files
         features = [
             {
                 "title": "Smart CV Analysis",
@@ -326,20 +277,16 @@ class AboutPage(ctk.CTkScrollableFrame):
             }
         ]
 
-        # Create feature cards
         for i, feature in enumerate(features):
             self.create_feature_card(grid_frame, feature, i)
 
 
     def create_feature_card(self, parent, feature_data, index):
-        """Create individual feature card"""
         card = ctk.CTkFrame(parent, fg_color="transparent")
         card.grid(row=0, column=index, padx=10, pady=5, sticky="nsew")
 
-        # Feature image
         self.create_feature_image(card, feature_data["image"])
 
-        # Feature title
         title_label = ctk.CTkLabel(
             card,
             text=feature_data["title"],
@@ -349,7 +296,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         title_label.pack(pady=(10, 5))
 
-        # Feature description
         desc_label = ctk.CTkLabel(
             card,
             text=feature_data["description"],
@@ -363,7 +309,6 @@ class AboutPage(ctk.CTkScrollableFrame):
 
 
     def create_feature_image(self, parent, filename):
-        """Create feature image based on provided filename"""
         try:
             image_path = self.find_image_path(filename)
 
@@ -393,16 +338,12 @@ class AboutPage(ctk.CTkScrollableFrame):
             self.create_placeholder_image(parent, 60, 60)
 
     def create_team_section(self, parent):
-        """Create Team section"""
-        # Team container
         team_container = ctk.CTkFrame(parent, fg_color="#18206F", corner_radius=15)
         team_container.pack(fill="x")
         
-        # Content with padding
         content_frame = ctk.CTkFrame(team_container, fg_color="transparent")
         content_frame.pack(fill="both", expand=True, padx=30, pady=30)
         
-        # Team title
         team_title = ctk.CTkLabel(
             content_frame,
             text="Team SigningOut",
@@ -411,7 +352,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         )
         team_title.pack(pady=(0, 10))
         
-        # Team description
         team_desc = ctk.CTkLabel(
             content_frame,
             text="Transform your hiring process with SignHire\n - whereintelligent algorithms meet intuitive design.",
@@ -422,7 +362,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         team_desc.pack()
     
     def find_image_path(self, filename):
-        """Find image path in various locations"""
         possible_paths = [
             os.path.join(os.path.dirname(__file__), "..", "..", "assets", filename),
             os.path.join(os.path.dirname(__file__), "..", "assets", filename),
@@ -436,7 +375,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         return None
     
     def create_placeholder_image(self, parent, width, height):
-        """Create placeholder image when actual image is not found"""
         placeholder = ctk.CTkFrame(
             parent,
             width=width,
@@ -447,7 +385,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         placeholder.pack(pady=10)
         placeholder.pack_propagate(False)
         
-        # Add placeholder text
         placeholder_text = ctk.CTkLabel(
             placeholder,
             text="IMG",
@@ -457,7 +394,6 @@ class AboutPage(ctk.CTkScrollableFrame):
         placeholder_text.pack(expand=True)
     
     def get_page_data(self):
-        """Get page data for navigation"""
         return {
             'title': 'About the App',
             'description': 'Learn more about SignHire ATS System'

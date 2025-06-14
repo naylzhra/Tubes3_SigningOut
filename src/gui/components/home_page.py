@@ -447,16 +447,18 @@ class HomePage(ctk.CTkScrollableFrame):
             print("Warning: Main window or search controller reference not set")
     
     def view_cv(self, cv_id):
-        print(f"Viewing CV: {cv_id}")
         
         if self.search_controller:
             try:
-                cv_content = self.search_controller.get_cv_content(cv_id)
+                cv_path = self.search_controller.get_cv_file_path(cv_id)
+                # print(f"CV file path: {cv_path}")
+                cv_content = self.search_controller.cv_data_manager.extract_cv_content(cv_path, True)
                 self.show_cv_content_dialog(cv_id, cv_content)
             except Exception as e:
                 print(f"Error viewing CV: {e}")
         
         if self.main_window:
+            print("Using main window to view CV")
             cv_index = self.cv_id_to_index(cv_id)
             self.main_window.view_cv_file(cv_index)
     

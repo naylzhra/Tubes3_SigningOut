@@ -191,11 +191,6 @@ class SearchController:
             }
         }
     
-    def get_cv_content(self, cv_id):
-        if cv_id in self.cv_database:
-            return self.cv_database[cv_id]
-        return "CV content not available"
-    
     def get_applicant_summary_data(self, detail_id):
         try:
             if self.cv_data_manager:

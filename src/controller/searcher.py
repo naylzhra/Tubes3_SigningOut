@@ -65,14 +65,16 @@ class SearchController:
             self.applicant_data_cache = {}
     
     def search_cvs(self, keywords_str, algorithm="KMP", top_n=5):
-        start_time = time.time()
-        
         keywords = self.parse_keywords(keywords_str)
         
         if not keywords or not self.cv_database:
             return self.create_empty_result()
         
         results = []
+        main_time_ms = None
+        leven_time_ms = None
+        
+        main_start = time.time()
         
         if algorithm == "KMP" and search_cvs_with_kmp:
             results = search_cvs_with_kmp(self.cv_database, keywords, top_n)
@@ -88,17 +90,27 @@ class SearchController:
                 algorithm = "KMP (fallback)"
             else:
                 return self.create_empty_result()
-        
-        # Try Levenshtein as fallback if no results
-        if len(results) == 0 and algorithm != "Levenshtein" and search_cvs_with_levenshtein:
-            print(f"No results found with {algorithm}, trying Levenshtein distance as fallback...")
-            results = search_cvs_with_levenshtein(self.cv_database, keywords, top_n)
-            algorithm = f"{algorithm} → Levenshtein"
-        
-        end_time = time.time()
-        search_time_ms = round((end_time - start_time) * 1000, 2)
-        
-        return self.format_results_for_ui(results, search_time_ms, algorithm)
+
+        main_time_ms = round((time.time() - main_start) * 1000, 2)
+
+        if len(results) < top_n and algorithm != "Levenshtein" and search_cvs_with_levenshtein:
+            print(f"Insufficient results ({len(results)}/{top_n}) with {algorithm}, using Levenshtein to supplement...")
+            leven_start = time.time()
+            leven_results = search_cvs_with_levenshtein(self.cv_database, keywords, top_n)
+            leven_time_ms = round((time.time() - leven_start) * 1000, 2)
+
+            existing_ids = {r["cv_id"] for r in results}
+            for res in leven_results:
+                if res["cv_id"] not in existing_ids:
+                    results.append(res)
+                    existing_ids.add(res["cv_id"])
+                    if len(results) >= top_n:
+                        break
+
+            algorithm += " + Levenshtein"
+
+        return self.format_results_for_ui(results, main_time_ms, algorithm, levenshtein_time_ms=leven_time_ms)
+
     
     def parse_keywords(self, keywords_str):
         if not keywords_str or not keywords_str.strip():
@@ -113,19 +125,18 @@ class SearchController:
         # print(f"Parsed keywords: {keywords}")
         return keywords
     
-    def format_results_for_ui(self, search_results, search_time_ms, algorithm):
+    def format_results_for_ui(self, search_results, search_time_ms, algorithm, levenshtein_time_ms=None):
         ui_results = []
-        
+
         for result in search_results:
             cv_id = result["cv_id"]
             cv_name = self.get_applicant_name_from_database(cv_id)
             
-            matched_keywords_formatted = []
-            for match_info in result["match_summary"]:
-                keyword = match_info["keyword"]
-                count = match_info["count"]
-                matched_keywords_formatted.append(f"• {keyword} ({count})")
-            
+            matched_keywords_formatted = [
+                f"• {match_info['keyword']} ({match_info['count']})"
+                for match_info in result["match_summary"]
+            ]
+
             ui_result = {
                 "cv_id": cv_id,
                 "name": cv_name,
@@ -136,10 +147,10 @@ class SearchController:
             }
             
             ui_results.append(ui_result)
-        
+
         total_cvs = len(self.cv_database)
         cvs_with_matches = len([r for r in search_results if r["total_score"] > 0])
-        
+
         formatted_response = {
             "results": ui_results,
             "summary": {
@@ -153,10 +164,16 @@ class SearchController:
                 "search_time_ms": search_time_ms
             }
         }
-        
+
+        if levenshtein_time_ms is not None:
+            formatted_response["timing"]["levenshtein_time_ms"] = levenshtein_time_ms
+
         print(f"Search completed: {cvs_with_matches}/{total_cvs} CVs matched in {search_time_ms}ms using {algorithm}")
+        if levenshtein_time_ms is not None:
+            print(f"Levenshtein additional time: {levenshtein_time_ms}ms")
+
         return formatted_response
-    
+
     def get_applicant_name_from_database(self, cv_id):
         try:
             detail_id = int(cv_id.split('_')[1])
@@ -195,7 +212,9 @@ class SearchController:
         try:
             if self.cv_data_manager:
                 summary_data = self.cv_data_manager.get_applicant_summary_data(detail_id)
+                    
                 print(f"Retrieved summary data for detail_id {detail_id}: {summary_data['name']}")
+                
                 return summary_data
             else:
                 return self.get_fallback_summary_data()
@@ -212,15 +231,16 @@ class SearchController:
             "phone": "N/A",
             "email": "N/A",
             "role": "N/A",
-            "skills": ["Technical Skills"],
+            "skills": ["None"],
             "job_history": [{
-                "title": "Professional Experience",
-                "period": "N/A",
-                "description": "Professional experience information."
+                "role": "Applicant Role",
+                "year": "N/A",
+                "company": "Applicant Company"
             }],
             "education": [{
                 "degree": "Educational Background",
-                "period": "N/A"
+                "year": "N/A",
+                "institution": "Applicant Institution"
             }]
         }
     

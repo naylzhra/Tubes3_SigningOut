@@ -36,11 +36,6 @@ def boyer_moore_search_keyword_list(text: str, keywords: list) -> dict:
         
         occurrences = boyer_moore_search(text_lower, keyword_lower)
         result[keyword] = len(occurrences)
-        
-        # Untuk debug
-        # print(f"Boyer-Moore - Keyword '{keyword}': {len(occurrences)} occurrences found")
-        # if occurrences:
-        #     print(f"  Positions: {occurrences[:5]}{'...' if len(occurrences) > 5 else ''}")
     
     return result
 

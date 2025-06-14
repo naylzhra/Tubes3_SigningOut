@@ -2,7 +2,7 @@
 Implementasi Allgoritma Levenshtein Distance
 '''
 
-threshold = 0.7
+threshold = 0.8
 
 def levenshtein_distance(data: list, keyword: list) -> dict:
     res = {key: 0 for key in keyword}

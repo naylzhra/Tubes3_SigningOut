@@ -18,20 +18,12 @@ except ImportError:
         from db_setup import get_db_connection
 
 try:
-    from controller.extractor import extract_plain_text, extract_regex_text, extract_cv_content_direct
+    from controller.extractor import extract_cv_content_direct
 except ImportError:
     try:
         import controller.extractor as extractor
-        extract_plain_text = extractor.extract_plain_text
-        extract_regex_text = extractor.extract_regex_text
         extract_cv_content_direct = extractor.extract_cv_content_direct
     except ImportError:
-        def extract_plain_text(pdf_path):
-            return str(pdf_path) + "_plain.txt"
-        
-        def extract_regex_text(pdf_path):
-            return str(pdf_path) + "_regex.txt"
-        
         def extract_cv_content_direct(pdf_path, use_regex=False):
             return f"Mock content from {pdf_path}"
         
@@ -166,18 +158,8 @@ class CVDataManager:
                 content = extract_cv_content_direct(full_path, use_regex)
                 return content
             except Exception as extract_error:
-                print(f"Direct extraction failed, trying file-based extraction: {extract_error}")
-                
-                if use_regex:
-                    extracted_file = extract_regex_text(full_path)
-                else:
-                    extracted_file = extract_plain_text(full_path)
-                
-                with open(extracted_file, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
-                return content
-            
+                print(f"Extraction failed, trying file-based extraction: {extract_error}")
+
         except Exception as e:
             print(f"Error extracting CV content from {cv_path}: {e}")
             return f"Error extracting CV: {str(e)}"

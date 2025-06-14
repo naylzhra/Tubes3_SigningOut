@@ -25,31 +25,6 @@ def _read_pdf(pdf_path: str | Path) -> str:
     except Exception as e:
         raise Exception(f"Error reading PDF {pdf_path}: {str(e)}")
 
-def extract_regex_text(pdf_path: str | Path) -> str:
-    raw = _read_pdf(pdf_path)
-    cleaned_lines = [ln.strip() for ln in raw.splitlines() if ln.strip()]
-    final = "\n".join(cleaned_lines)
-
-    pdf_path = Path(pdf_path)
-    out_dir = pdf_path.parent / "regex"
-    out_dir.mkdir(exist_ok=True)
-    out_file = out_dir / (pdf_path.stem + ".txt")
-    out_file.write_text(final, encoding="utf-8")
-
-    return str(out_file)
-
-def extract_plain_text(pdf_path: str | Path) -> str:
-    raw = _read_pdf(pdf_path)
-    collapsed = _SPACES.sub(" ", raw).strip().lower()
-
-    pdf_path = Path(pdf_path)
-    out_dir = pdf_path.parent / "plain"
-    out_dir.mkdir(exist_ok=True)
-    out_file = out_dir / (pdf_path.stem + ".txt")
-    out_file.write_text(collapsed, encoding="utf-8")
-
-    return str(out_file)
-
 def extract_cv_content_direct(pdf_path: str | Path, use_regex: bool = False) -> str:
     try:
         raw = _read_pdf(pdf_path)

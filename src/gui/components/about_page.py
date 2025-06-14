@@ -354,7 +354,7 @@ class AboutPage(ctk.CTkScrollableFrame):
         
         team_desc = ctk.CTkLabel(
             content_frame,
-            text="Transform your hiring process with SignHire\n - whereintelligent algorithms meet intuitive design.",
+            text="Transform your hiring process with SignHire\n - where intelligent algorithms meet intuitive design.",
             font=ctk.CTkFont(size=14, slant="italic"),
             text_color="#E5E7EB",
             justify="center"

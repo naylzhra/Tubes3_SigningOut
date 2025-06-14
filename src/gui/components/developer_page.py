@@ -1,7 +1,7 @@
 # developer_page.py
 import customtkinter as ctk
 import os
-from PIL import Image
+from PIL import Image, ImageDraw, ImageOps
 
 class DeveloperPage(ctk.CTkScrollableFrame):
     def __init__(self, parent, **kwargs):
@@ -25,7 +25,7 @@ class DeveloperPage(ctk.CTkScrollableFrame):
         title_label = ctk.CTkLabel(
             parent,
             text="The Team Behind SignHire",
-            font=ctk.CTkFont(size=28, weight="bold"),
+            font=ctk.CTkFont(size=24, weight="bold"),
             text_color="white"
         )
         title_label.pack(pady=(0, 15))
@@ -40,32 +40,32 @@ class DeveloperPage(ctk.CTkScrollableFrame):
     
     def create_team_cards(self, parent):
         cards_container = ctk.CTkFrame(parent, fg_color="transparent")
-        cards_container.pack(fill="x", expand=True)
+        cards_container.pack(fill="both", expand=True, padx=15)
         
         for i in range(3):
-            cards_container.grid_columnconfigure(i, weight=1, minsize=200)
+            cards_container.grid_columnconfigure(i, weight=1, minsize=300)
         
         team_members = [
             {
                 "name": "Newa",
-                "nim": "13522001",
-                "quote": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                "profile_image": "img3.png" 
+                "nim": "13523043",
+                "quote": "I maybe not yours and you're not mine.\nBut I'll be there for you when you need me \n - It's Only Me, Kaleb J",
+                "description": "Terima kasih kepada stima yang sudah mewarnai\nsemester paling chaos so far dengan 3 tucil dan 3 tubes.\nSangat berkesan.\n\nTerima kasih juga kepada tim SigningOut yang sudah\nmenjadi tim penutup stima yang sangat fun.\n\nps: Heleni jangan lupa bayar denda wkwk",
+                "profile_image": "newa.jpg" 
             },
             {
-                "name": "Newa",
-                "nim": "13522002",
-                "quote": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                "profile_image": "img4.png"  
+                "name": "Nayla",
+                "nim": "13523079",
+                "quote": "Pasti kau temukan aku di garis terdepan \nBertepuk dengan sebelah tangan \n - Garis Terdepan, Fiersa Bestari",
+                "description": "Terima kasih Stima atas \nsemua perjalanan, pelajaran,\ndan kenangannya.\n\nApresiasi besar juga ke tim signingOut\n\nWe did great! lovyu ol <3\n\nps: kata heleni jangan sampe termangu ges",
+                "profile_image": "nayla.jpg"  
             },
             {
-                "name": "Newa",
-                "nim": "13522003",
-                "quote": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                "profile_image": "img5.png" 
+                "name": "Heleni",
+                "nim": "13523107",
+                "quote": "Siapa yang tau \nSiapa yang mau\nKau di sana\nAku diseberangmu\n - Mangu, Fourtwnty",
+                "description": "Makasih buat stima, hal yang bisa kukenal baik dan bisa beri makna mendalam.\n\nMakasih juga terkhusus buat tim SigningOut. We slayed it, guys! ヾ(≧▽≦*)o \n\nps: bisa termangu asalkan ga kejauhan ^^",
+                "profile_image": "heleni.jpeg" 
             }
         ]
         
@@ -77,39 +77,45 @@ class DeveloperPage(ctk.CTkScrollableFrame):
             parent,
             fg_color="#E8D5B7", 
             corner_radius=20,
-            width=220,
-            height=320
+            width=300, 
+            height=350  
         )
-        card.grid(row=0, column=index, padx=15, pady=10, sticky="nsew")
+        card.grid(row=0, column=index, padx=12, pady=10, sticky="nsew")
         card.grid_propagate(False)
         
         card_content = ctk.CTkFrame(card, fg_color="transparent")
-        card_content.pack(fill="both", expand=True, padx=20, pady=20)
+        card_content.pack(fill="both", expand=True, padx=18, pady=18)
         
-        quote_label = ctk.CTkLabel(
+        quote_textbox = ctk.CTkTextbox(
             card_content,
-            text=f'"{member_data["quote"]}"',
-            font=ctk.CTkFont(size=12, slant="italic"),
+            height=100, 
+            font=ctk.CTkFont(size=12, slant="italic"),  
+            fg_color="transparent",
             text_color="#2D1B69",
-            anchor="w",
-            justify="left",
-            wraplength=180
+            wrap="word",
+            border_width=0,
+            corner_radius=0
         )
-        quote_label.pack(anchor="w", fill="x", pady=(0, 15))
+        quote_textbox.pack(anchor="w", fill="x", pady=(0, 12))  
+        quote_textbox.insert("1.0", f'"{member_data["quote"]}"')
+        quote_textbox.configure(state="disabled")  
         
-        description_label = ctk.CTkLabel(
+        description_textbox = ctk.CTkTextbox(
             card_content,
-            text=member_data["description"],
-            font=ctk.CTkFont(size=11),
+            height=150,  
+            font=ctk.CTkFont(size=10), 
+            fg_color="transparent",
             text_color="#2D1B69",
-            anchor="w",
-            justify="left",
-            wraplength=180
+            wrap="word",
+            border_width=0,
+            corner_radius=0
         )
-        description_label.pack(anchor="w", fill="x", pady=(0, 20))
+        description_textbox.pack(anchor="w", fill="x", pady=(0, 15)) 
+        description_textbox.insert("1.0", member_data["description"])
+        description_textbox.configure(state="disabled")  
         
         bottom_section = ctk.CTkFrame(card_content, fg_color="transparent")
-        bottom_section.pack(side="bottom", fill="x", pady=(10, 0))
+        bottom_section.pack(side="bottom", fill="x", pady=(10, 0))  
         
         profile_section = ctk.CTkFrame(bottom_section, fg_color="transparent")
         profile_section.pack(fill="x")
@@ -117,21 +123,21 @@ class DeveloperPage(ctk.CTkScrollableFrame):
         self.create_profile_picture(profile_section, member_data)
         
         info_section = ctk.CTkFrame(profile_section, fg_color="transparent")
-        info_section.pack(side="left", fill="both", expand=True, padx=(10, 0))
+        info_section.pack(side="left", fill="both", expand=True, padx=(12, 0))  
         
         name_label = ctk.CTkLabel(
             info_section,
             text=member_data["name"],
-            font=ctk.CTkFont(size=14, weight="bold"),
+            font=ctk.CTkFont(size=15, weight="bold"),  
             text_color="#2D1B69",
             anchor="w"
         )
-        name_label.pack(anchor="w")
+        name_label.pack(anchor="w", fill="x")
         
         nim_label = ctk.CTkLabel(
             info_section,
             text=member_data["nim"],
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=11),  
             text_color="#6B7280",
             anchor="w"
         )
@@ -143,20 +149,20 @@ class DeveloperPage(ctk.CTkScrollableFrame):
             
             if image_path and os.path.exists(image_path):
                 pil_image = Image.open(image_path)
-                pil_image = pil_image.resize((45, 45), Image.Resampling.LANCZOS)
+                pil_image = pil_image.resize((120, 120), Image.Resampling.LANCZOS)
                 
                 profile_image = ctk.CTkImage(
                     light_image=pil_image,
                     dark_image=pil_image,
-                    size=(45, 45)
+                    size=(50, 50) 
                 )
                 
                 profile_label = ctk.CTkLabel(
                     parent,
                     image=profile_image,
                     text="",
-                    width=45,
-                    height=45
+                    width=50,  
+                    height=50  
                 )
                 profile_label.pack(side="left")
                 
@@ -177,20 +183,20 @@ class DeveloperPage(ctk.CTkScrollableFrame):
                 
                 if image_path and os.path.exists(image_path):
                     pil_image = Image.open(image_path)
-                    pil_image = pil_image.resize((45, 45), Image.Resampling.LANCZOS)
+                    pil_image = pil_image.resize((50, 50), Image.Resampling.LANCZOS)
                     
                     profile_image = ctk.CTkImage(
                         light_image=pil_image,
                         dark_image=pil_image,
-                        size=(45, 45)
+                        size=(50, 50)
                     )
                     
                     profile_label = ctk.CTkLabel(
                         parent,
                         image=profile_image,
                         text="",
-                        width=45,
-                        height=45
+                        width=50,  
+                        height=50  
                     )
                     profile_label.pack(side="left")
                     
@@ -206,15 +212,14 @@ class DeveloperPage(ctk.CTkScrollableFrame):
     def create_profile_placeholder(self, parent, member_name):
         profile_frame = ctk.CTkFrame(
             parent,
-            width=45,
-            height=45,
+            width=50,  
+            height=50,  
             fg_color="#2D1B69",  
-            corner_radius=22.5  
+            corner_radius=25
         )
         profile_frame.pack(side="left")
         profile_frame.pack_propagate(False)
         
-        # Add initials or icon
         initials = member_name[:2].upper() if len(member_name) >= 2 else member_name[0].upper()
         
         profile_text = ctk.CTkLabel(

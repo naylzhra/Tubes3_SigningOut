@@ -82,13 +82,11 @@ def generate_summary(data : dict) -> dict :
             
     return summaries
 
-# extracting education
 def extract_education(data : list) -> list :
     print("Extracting education")
     print(data)
-    processed_data = data.copy()
-    educatinon = []
-    current_edu = {}
+    
+    education = []
     
     degree_patterns = [
         r'\b(bachelor|master|phd|doctorate|diploma|certificate)\b',
@@ -115,19 +113,164 @@ def extract_education(data : list) -> list :
         r'\b(graduated|class\s*of)\s*\d{4}\b',
     ]
     
-    # year-only pattern for standalone years
-    year_only_pattern = r'^\s*(20\d{2}|19\d{2})\s*'
+    for line in data:
+        line_lower = line.lower()
+        
+        degree_found = None
+        for pattern in degree_patterns:
+            match = re.search(pattern, line_lower, re.IGNORECASE)
+            if match:
+                degree_found = match.group(0)
+                break
+        
+        institution_found = None
+        for pattern in institution_patterns:
+            match = re.search(pattern, line_lower, re.IGNORECASE)
+            if match:
+                institution_found = line.strip()
+                break
+        
+        field_found = None
+        for pattern in field_patterns:
+            match = re.search(pattern, line, re.IGNORECASE)
+            if match:
+                field_found = match.group(1).strip() if len(match.groups()) > 0 else match.group(0)
+                break
+        
+        date_found = None
+        for pattern in date_patterns:
+            match = re.search(pattern, line)
+            if match:
+                date_found = match.group(0)
+                break
+        
+        if degree_found or institution_found or field_found:
+            edu_entry = {
+                "degree": degree_found or field_found or line.strip(),
+                "period": date_found or "Study Period"
+            }
+            if institution_found:
+                edu_entry["institution"] = institution_found
+            education.append(edu_entry)
     
+    return education[:2] if education else []
 
-# extracting job history
 def extract_job_history(data : list) -> list :
     print("Extracting job")
     print(data)
     
-# extracting skills
+    jobs = []
+    
+    job_title_patterns = [
+        r'\b(manager|engineer|developer|analyst|coordinator|specialist|assistant|director|supervisor)\b',
+        r'\b(senior|junior|lead|principal|staff)\s+\w+',
+    ]
+    
+    company_patterns = [
+        r'\b(company|corporation|corp|inc|ltd|llc|group|solutions|systems|technologies)\b',
+        r'at\s+([^,\n]+)',
+    ]
+    
+    date_patterns = [
+        r'\b(20\d{2}|19\d{2})\s*[-–—]\s*(20\d{2}|19\d{2}|present|current)\b',
+        r'\b(20\d{2}|19\d{2})\b',
+    ]
+    
+    current_job = {}
+    job_lines = []
+    
+    for line in data:
+        line_stripped = line.strip()
+        if not line_stripped:
+            if job_lines:
+                job_entry = process_job_lines(job_lines, job_title_patterns, company_patterns, date_patterns)
+                if job_entry:
+                    jobs.append(job_entry)
+                job_lines = []
+            continue
+        
+        job_lines.append(line_stripped)
+    
+    if job_lines:
+        job_entry = process_job_lines(job_lines, job_title_patterns, company_patterns, date_patterns)
+        if job_entry:
+            jobs.append(job_entry)
+    
+    return jobs[:3] if jobs else []
+
+def process_job_lines(lines: list, title_patterns: list, company_patterns: list, date_patterns: list) -> dict:
+    try:
+        title = lines[0] if lines else "Position"
+        period = "Experience Period"
+        company = ""
+        description = ""
+        
+        all_text = " ".join(lines)
+        
+        for pattern in date_patterns:
+            match = re.search(pattern, all_text, re.IGNORECASE)
+            if match:
+                period = match.group(0)
+                break
+        
+        for pattern in company_patterns:
+            match = re.search(pattern, all_text, re.IGNORECASE)
+            if match:
+                if len(match.groups()) > 0:
+                    company = match.group(1).strip()
+                break
+        
+        if len(lines) > 1:
+            description = " ".join(lines[1:])[:150] + "..."
+        else:
+            description = "Professional experience in this role."
+        
+        return {
+            "title": title,
+            "period": period,
+            "description": description
+        }
+        
+    except Exception as e:
+        print(f"Error processing job lines: {e}")
+        return None
+
 def extract_skill(data : list) -> list :
     print("Extracting skills")
     print(data)   
+    
+    skills = []
+    
+    skill_patterns = [
+        r'\b(python|java|javascript|typescript|c\+\+|c#|php|ruby|go|rust)\b',
+        r'\b(html|css|react|angular|vue|node\.?js|django|flask|spring)\b',
+        r'\b(sql|mysql|postgresql|mongodb|redis|oracle|sqlite)\b',
+        r'\b(aws|azure|gcp|docker|kubernetes|git|linux|windows)\b',
+        r'\b(photoshop|illustrator|figma|sketch|autocad|solidworks)\b',
+        r'\b(excel|powerpoint|word|outlook|salesforce|sap)\b',
+        r'\b(project\s*management|team\s*leadership|communication|problem\s*solving)\b',
+    ]
+    
+    for line in data:
+        line_lower = line.lower()
+        
+        if ',' in line or '•' in line or '-' in line:
+            parts = re.split(r'[,•\-\n]', line)
+            for part in parts:
+                skill = part.strip()
+                if skill and len(skill) > 1:
+                    skills.append(skill.title())
+        
+        for pattern in skill_patterns:
+            matches = re.findall(pattern, line_lower, re.IGNORECASE)
+            for match in matches:
+                skills.append(match.title())
+        
+        if len(line.strip().split()) <= 3 and len(line.strip()) > 2:
+            skills.append(line.strip().title())
+    
+    unique_skills = list(dict.fromkeys(skills))
+    return unique_skills[:10] if unique_skills else []
         
         
 # driver

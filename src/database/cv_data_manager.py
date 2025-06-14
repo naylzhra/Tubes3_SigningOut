@@ -26,48 +26,16 @@ except ImportError:
     except ImportError:
         def extract_cv_content_direct(pdf_path, use_regex=False):
             return f"Mock content from {pdf_path}"
+        
+from model.encryptor import Encryptor
+from model.regex import extract_information_group, generate_summary, extract_education, extract_job_history, extract_skill
 
-# Import the Encryptor class
-# Import Encryptor
-try:
-    from model.encryptor import Encryptor
-except ImportError:
-    try:
-        import model.encryptor as encryptor_module
-        Encryptor = encryptor_module.Encryptor
-    except ImportError:
-        print("Encryptor module not found.")
-
-# Import regex extraction functions
-try:
-    from model.regex import extract_information_group, generate_summary, extract_education, extract_job_history, extract_skill
-except ImportError:
-    try:
-        import model.regex as regex_module
-        extract_information_group = regex_module.extract_information_group
-        generate_summary = regex_module.generate_summary
-        extract_education = regex_module.extract_education
-        extract_job_history = regex_module.extract_job_history
-        extract_skill = regex_module.extract_skill
-    except ImportError:
-        # Fallback functions if import fails
-        def extract_information_group(content):
-            return {}
-        def generate_summary(data):
-            return {}
-        def extract_education(data):
-            return []
-        def extract_job_history(data):
-            return []
-        def extract_skill(data):
-            return []
 
 class CVDataManager:
     def __init__(self):
         self.cv_cache = {} 
         self.applicant_cache = {}  
         self.skills_cache = {}
-        # Initialize encryptor with the same key used in seeder
         self.encryptor = Encryptor("SIGNHIRE")
         
     def get_cv_paths(self) -> dict:
@@ -88,7 +56,7 @@ class CVDataManager:
             formatted_result = {}
             for row in result:
                 detail_id = row[0]
-                cv_path = row[1]  # cv_path is not encrypted, so no need to decrypt
+                cv_path = row[1] 
                 formatted_result[f"cv_{detail_id}"] = cv_path
             
             if cur:

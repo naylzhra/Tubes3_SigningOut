@@ -34,83 +34,16 @@ except ImportError:
         
         def extract_cv_content_direct(pdf_path, use_regex=False):
             return f"Mock content from {pdf_path}"
+        
+from model.encryptor import Encryptor
+from model.regex import extract_information_group, generate_summary, extract_education, extract_job_history, extract_skill
 
-# Import the Encryptor class
-# Import Encryptor
-try:
-    from model.encryptor import Encryptor
-except ImportError:
-    try:
-        import model.encryptor as encryptor_module
-        Encryptor = encryptor_module.Encryptor
-    except ImportError:
-        # Fallback Encryptor if import fails
-        import base64
-        class Encryptor:
-            def __init__(self, key: str):
-                self.key = key
-
-            def _shift_char(self, c, k, encrypt=True):
-                base = ord(' ')
-                range_size = 95  # printable ASCII from ' ' (32) to '~' (126)
-
-                c_idx = ord(c) - base
-                k_idx = ord(k) - base
-                shift = (c_idx + k_idx) % range_size if encrypt else (c_idx - k_idx) % range_size
-                return chr(base + shift)
-
-            def _apply_cipher(self, text: str, encrypt=True) -> str:
-                text = text or ""
-                result = []
-                for i, c in enumerate(text):
-                    if 32 <= ord(c) <= 126:
-                        k = self.key[i % len(self.key)]
-                        result.append(self._shift_char(c, k, encrypt))
-                    else:
-                        result.append(c)
-                return ''.join(result)
-
-            def encrypt(self, plaintext: str) -> str:
-                cipher = self._apply_cipher(plaintext, encrypt=True)
-                return base64.urlsafe_b64encode(cipher.encode()).decode()
-
-            def decrypt(self, ciphertext: str) -> str:
-                try:
-                    decoded = base64.urlsafe_b64decode(ciphertext.encode()).decode()
-                    return self._apply_cipher(decoded, encrypt=False)
-                except Exception:
-                    return "[DECRYPTION FAILED]"
-
-# Import regex extraction functions
-try:
-    from model.regex import extract_information_group, generate_summary, extract_education, extract_job_history, extract_skill
-except ImportError:
-    try:
-        import model.regex as regex_module
-        extract_information_group = regex_module.extract_information_group
-        generate_summary = regex_module.generate_summary
-        extract_education = regex_module.extract_education
-        extract_job_history = regex_module.extract_job_history
-        extract_skill = regex_module.extract_skill
-    except ImportError:
-        # Fallback functions if import fails
-        def extract_information_group(content):
-            return {}
-        def generate_summary(data):
-            return {}
-        def extract_education(data):
-            return []
-        def extract_job_history(data):
-            return []
-        def extract_skill(data):
-            return []
 
 class CVDataManager:
     def __init__(self):
         self.cv_cache = {} 
         self.applicant_cache = {}  
         self.skills_cache = {}
-        # Initialize encryptor with the same key used in seeder
         self.encryptor = Encryptor("SIGNHIRE")
         
     def get_cv_paths(self) -> dict:
@@ -131,7 +64,7 @@ class CVDataManager:
             formatted_result = {}
             for row in result:
                 detail_id = row[0]
-                cv_path = row[1]  # cv_path is not encrypted, so no need to decrypt
+                cv_path = row[1] 
                 formatted_result[f"cv_{detail_id}"] = cv_path
             
             if cur:

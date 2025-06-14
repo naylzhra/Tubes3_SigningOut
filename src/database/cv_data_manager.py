@@ -35,11 +35,56 @@ except ImportError:
         def extract_cv_content_direct(pdf_path, use_regex=False):
             return f"Mock content from {pdf_path}"
 
+try:
+    from model.encryptor import Encryptor
+except ImportError:
+    try:
+        import model.encryptor as encryptor_module
+        Encryptor = encryptor_module.Encryptor
+    except ImportError:
+        import base64
+        class Encryptor:
+            def __init__(self, key: str):
+                self.key = key
+
+            def _shift_char(self, c, k, encrypt=True):
+                base = ord(' ')
+                range_size = 95  # printable ASCII from ' ' (32) to '~' (126)
+
+                c_idx = ord(c) - base
+                k_idx = ord(k) - base
+                shift = (c_idx + k_idx) % range_size if encrypt else (c_idx - k_idx) % range_size
+                return chr(base + shift)
+
+            def _apply_cipher(self, text: str, encrypt=True) -> str:
+                text = text or ""
+                result = []
+                for i, c in enumerate(text):
+                    if 32 <= ord(c) <= 126:
+                        k = self.key[i % len(self.key)]
+                        result.append(self._shift_char(c, k, encrypt))
+                    else:
+                        result.append(c)
+                return ''.join(result)
+
+            def encrypt(self, plaintext: str) -> str:
+                cipher = self._apply_cipher(plaintext, encrypt=True)
+                return base64.urlsafe_b64encode(cipher.encode()).decode()
+
+            def decrypt(self, ciphertext: str) -> str:
+                try:
+                    decoded = base64.urlsafe_b64decode(ciphertext.encode()).decode()
+                    return self._apply_cipher(decoded, encrypt=False)
+                except Exception:
+                    return "[DECRYPTION FAILED]"
+
+
 class CVDataManager:
     def __init__(self):
         self.cv_cache = {} 
         self.applicant_cache = {}  
         self.skills_cache = {} 
+        self.encryptor = Encryptor("SIGNHIRE")
         
     def get_cv_paths(self) -> dict:
         try:
@@ -102,11 +147,11 @@ class CVDataManager:
                 dob = row[4]
                 dob_str = dob.strftime("%d %B %Y") if dob else "N/A"
                 
-                first_name = row[1] if row[1] else ""
-                last_name = row[2] if row[2] else ""
-                email = row[3] if row[3] else ""
-                address = row[5] if row[5] else ""
-                phone = row[6] if row[6] else ""
+                first_name = self.encryptor.decrypt(row[1]) if row[1] else ""
+                last_name = self.encryptor.decrypt(row[2]) if row[2] else ""
+                email = self.encryptor.decrypt(row[3]) if row[3] else ""
+                address = self.encryptor.decrypt(row[5]) if row[5] else ""
+                phone = self.encryptor.decrypt(row[6]) if row[6] else ""
                 role = row[7] if row[7] else ""
                 
                 formatted_result[detail_id] = {

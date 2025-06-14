@@ -13,6 +13,10 @@ from model.encryptor import Encryptor
 fake = Faker()
 DATA_ROOT = Path(__file__).resolve().parents[2] / "data"
 encryptor = Encryptor("SIGNHIRE")
+ROLES = [
+    "ACCOUNTANT", "ENGINEER", "DESIGNER", "TEACHER", "HEALTHCARE",
+    "INFORMATION-TECHNOLOGY", "HR", "FINANCE", "SALES", "CONSULTANT"
+]
 
 def clean_phone() -> str:
     digits = re.sub(r'\D', '', fake.phone_number())
@@ -88,13 +92,21 @@ def seed_application_details(max_roles_per_applicant: int = 2):
         VALUES (%s, %s, %s)
     """
 
-    pdf_paths = sorted(DATA_ROOT.glob("*/*.pdf"))
+    pdf_paths = sorted(DATA_ROOT.glob("*.pdf"))
     if not pdf_paths:
         print(f"No PDFs found under {DATA_ROOT}")
         return
-
+    
+    ROLES = [
+        "Accountant", "Engineer", "Designer", "Teacher", "Healthcare",
+        "Information-Technology", "HR", "Finance", "Sales", "Consultant", 
+        "Marketing", "Legal", "Project-Manager", "Data-Analyst", "Researcher", 
+        "Developer", "System-Administrator", "Network-Engineer", "Business-Analyst", 
+        "Product-Manager", "Operations-Manager", "Customer-Service", "Chef"
+    ]
+    role_cycle = itertools.cycle(ROLES)
     for i, pdf in enumerate(pdf_paths, start=1):
-        role = pdf.parent.name.upper()
+        role = next(role_cycle)
         applicant_id = next_applicant()
         cur.execute(
             insert_stmt,

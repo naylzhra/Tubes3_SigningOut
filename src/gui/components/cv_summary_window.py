@@ -265,7 +265,7 @@ Role             : {self.cv_data.get('role', 'N/A')}"""
             
             job_title = ctk.CTkLabel(
                 job_content,
-                text=job["title"],
+                text=job["role"],
                 font=ctk.CTkFont(size=14, weight="bold"), 
                 text_color="#2D1B69",
                 anchor="w"
@@ -274,7 +274,7 @@ Role             : {self.cv_data.get('role', 'N/A')}"""
             
             job_period = ctk.CTkLabel(
                 job_content,
-                text=job["period"],
+                text=job["year"],
                 font=ctk.CTkFont(size=11),  
                 text_color="#2D1B69",
                 anchor="w"
@@ -283,7 +283,7 @@ Role             : {self.cv_data.get('role', 'N/A')}"""
             
             job_desc = ctk.CTkLabel(
                 job_content,
-                text=job["description"],
+                text=job["company"],
                 font=ctk.CTkFont(size=10), 
                 text_color="#2D1B69",
                 anchor="w",
@@ -324,12 +324,21 @@ Role             : {self.cv_data.get('role', 'N/A')}"""
             
             edu_period = ctk.CTkLabel(
                 edu_content,
-                text=education["period"],
+                text=education["year"],
                 font=ctk.CTkFont(size=11),  
                 text_color="#2D1B69",
                 anchor="w"
             )
             edu_period.pack(fill="x", pady=(1, 0))  
+            
+            edu_inst = ctk.CTkLabel(
+                edu_content,
+                text=education["institution"],
+                font=ctk.CTkFont(size=11),  
+                text_color="#2D1B69",
+                anchor="w"
+            )
+            edu_inst.pack(fill="x", pady=(1, 0))  
     
     def create_action_buttons(self):
         button_frame = ctk.CTkFrame(self.scrollable_frame, fg_color="transparent")
@@ -429,7 +438,7 @@ class CVSummaryIntegration:
         try:
             if search_controller and hasattr(search_controller, 'get_applicant_summary_data'):
                 detail_id = int(cv_id.split('_')[1]) if cv_id.startswith('cv_') else int(cv_id)
-                summary_data = search_controller.get_applicant_summary_data(detail_id)
+                summary_data = search_controller.get_applicant_summary_data(detail_id)                
                 
                 class CVDataWithID:
                     def __init__(self, data, cv_id):

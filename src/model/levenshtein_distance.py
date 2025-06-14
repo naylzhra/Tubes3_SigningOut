@@ -2,7 +2,7 @@
 Implementasi Allgoritma Levenshtein Distance
 '''
 
-threshold = 0.5
+threshold = 0.7
 
 def levenshtein_distance(data: list, keyword: list) -> dict:
     res = {key: 0 for key in keyword}
@@ -18,6 +18,9 @@ def is_pass(string1: str, string2: str, dist: int) -> bool:
     if m == 0:
         return True 
     sim = 1 - (dist / m)
+    # panjang keyword kecil
+    if len(string2) <= 4:
+        return sim >= 0.9
     return sim > threshold
 
 def levenshtein_calculation(string1: str, string2: str) -> int:

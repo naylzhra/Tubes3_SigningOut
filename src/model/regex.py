@@ -99,13 +99,6 @@ def extract_education(data : list) -> list :
         r'\bof\s+[\w\s]+\b',  # "University of Something"
     ]
     
-    field_patterns = [
-        r':\s*([^,]+)',  # "Diploma : Culinary/Auto Body"
-        r'\bin\s+([^,]+)\b',  # "Bachelor in Computer Science"
-        r'\bof\s+([^,]+)\b',  # "Master of Business"
-        r'\b(computer\s*science|engineering|business|management|arts|science|culinary|hospitality)\b',
-    ]
-    
     date_patterns = [
         r'\b(19\d{2}\s*(?: -|to)\s*20\d{2})',
         r'\b(20\d{2}\s*(?: -|to)\s*20\d{2})',

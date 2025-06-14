@@ -18,20 +18,12 @@ except ImportError:
         from db_setup import get_db_connection
 
 try:
-    from controller.extractor import extract_plain_text, extract_regex_text, extract_cv_content_direct
+    from controller.extractor import extract_cv_content_direct
 except ImportError:
     try:
         import controller.extractor as extractor
-        extract_plain_text = extractor.extract_plain_text
-        extract_regex_text = extractor.extract_regex_text
         extract_cv_content_direct = extractor.extract_cv_content_direct
     except ImportError:
-        def extract_plain_text(pdf_path):
-            return str(pdf_path) + "_plain.txt"
-        
-        def extract_regex_text(pdf_path):
-            return str(pdf_path) + "_regex.txt"
-        
         def extract_cv_content_direct(pdf_path, use_regex=False):
             return f"Mock content from {pdf_path}"
 
@@ -44,42 +36,7 @@ except ImportError:
         import model.encryptor as encryptor_module
         Encryptor = encryptor_module.Encryptor
     except ImportError:
-        # Fallback Encryptor if import fails
-        import base64
-        class Encryptor:
-            def __init__(self, key: str):
-                self.key = key
-
-            def _shift_char(self, c, k, encrypt=True):
-                base = ord(' ')
-                range_size = 95  # printable ASCII from ' ' (32) to '~' (126)
-
-                c_idx = ord(c) - base
-                k_idx = ord(k) - base
-                shift = (c_idx + k_idx) % range_size if encrypt else (c_idx - k_idx) % range_size
-                return chr(base + shift)
-
-            def _apply_cipher(self, text: str, encrypt=True) -> str:
-                text = text or ""
-                result = []
-                for i, c in enumerate(text):
-                    if 32 <= ord(c) <= 126:
-                        k = self.key[i % len(self.key)]
-                        result.append(self._shift_char(c, k, encrypt))
-                    else:
-                        result.append(c)
-                return ''.join(result)
-
-            def encrypt(self, plaintext: str) -> str:
-                cipher = self._apply_cipher(plaintext, encrypt=True)
-                return base64.urlsafe_b64encode(cipher.encode()).decode()
-
-            def decrypt(self, ciphertext: str) -> str:
-                try:
-                    decoded = base64.urlsafe_b64decode(ciphertext.encode()).decode()
-                    return self._apply_cipher(decoded, encrypt=False)
-                except Exception:
-                    return "[DECRYPTION FAILED]"
+        print("Encryptor module not found.")
 
 # Import regex extraction functions
 try:
@@ -233,18 +190,8 @@ class CVDataManager:
                 content = extract_cv_content_direct(full_path, use_regex)
                 return content
             except Exception as extract_error:
-                print(f"Direct extraction failed, trying file-based extraction: {extract_error}")
-                
-                if use_regex:
-                    extracted_file = extract_regex_text(full_path)
-                else:
-                    extracted_file = extract_plain_text(full_path)
-                
-                with open(extracted_file, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
-                return content
-            
+                print(f"Extraction failed, trying file-based extraction: {extract_error}")
+
         except Exception as e:
             print(f"Error extracting CV content from {cv_path}: {e}")
             return f"Error extracting CV: {str(e)}"

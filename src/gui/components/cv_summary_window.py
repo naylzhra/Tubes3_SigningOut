@@ -392,9 +392,24 @@ Role             : {self.cv_data.get('role', 'N/A')}"""
             from pathlib import Path
             
             if not os.path.isabs(cv_file_path):
-                current_dir = Path(__file__).resolve().parent
-                project_root = current_dir.parent.parent
-                full_path = project_root / cv_file_path
+                # Same logic as extract_cv_content - try multiple possible roots
+                possible_roots = [
+                    Path(__file__).resolve().parents[3],  # project_root equivalent
+                    Path(__file__).resolve().parents[2],  # parent of current
+                    Path.cwd()  # current working directory
+                ]
+                
+                full_path = None
+                for root in possible_roots:
+                    test_path = root / cv_file_path
+                    if test_path.exists():
+                        full_path = test_path
+                        break
+                
+                if full_path is None:
+                    messagebox.showerror("File Not Found", f"CV file not found in any location:\n{cv_file_path}")
+                    print(f"CV file not found in any location: {cv_file_path}")
+                    return
             else:
                 full_path = Path(cv_file_path)
             

@@ -104,13 +104,13 @@ class SearchController:
         if not keywords_str or not keywords_str.strip():
             return []
         
-        # Parse comma-separated or space-separated keywords
-        if ',' in keywords_str:
-            keywords = [kw.strip() for kw in keywords_str.split(',') if kw.strip()]
-        else:
-            keywords = [kw.strip() for kw in keywords_str.split() if kw.strip()]
+        keywords = [kw.strip() for kw in keywords_str.split(',') if kw.strip()]
+        # if ',' in keywords_str:
+        #     keywords = [kw.strip() for kw in keywords_str.split(',') if kw.strip()]
+        # else:
+        #     keywords = [kw.strip() for kw in keywords_str.split() if kw.strip()]
         
-        print(f"Parsed keywords: {keywords}")
+        # print(f"Parsed keywords: {keywords}")
         return keywords
     
     def format_results_for_ui(self, search_results, search_time_ms, algorithm):

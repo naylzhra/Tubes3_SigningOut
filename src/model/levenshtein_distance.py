@@ -35,7 +35,8 @@ def levenshtein_calculation(string1: str, string2: str) -> int:
     if n == 0:
         return m
     
-    # membuat prev dan curr untuk mengecek perbedaan kedua string    prev = [i for i in range(m + 1)]
+    # membuat prev dan curr untuk mengecek perbedaan kedua string    
+    prev = [i for i in range(m + 1)]
     curr = [0 for i in range(m + 1)]
     
     # iterate untuk setiap character di shorter string

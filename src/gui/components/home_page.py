@@ -221,19 +221,24 @@ class HomePage(ctk.CTkScrollableFrame):
             
             self.current_results = results
             self.display_search_results(results)
+            
             algorithm_used = results['summary']['algorithm_used']
             result_count = len(results['results'])
+            main_time = results['timing']['search_time_ms']
+            leven_time = results['timing'].get('levenshtein_time_ms')  # Optional
+
+            print(f"{algorithm_used} search completed: {result_count} results found in {main_time}ms")
             
-            print(f"{algorithm_used} Search completed: {result_count} results found")
+            if leven_time is not None:
+                print(f"Levenshtein additional search took {leven_time}ms")
             
-            # Log fallback usage if applicable
-            if "→" in algorithm_used:
+            if "+" in algorithm_used:
                 print(f"Fallback mechanism activated: {algorithm_used}")
-            
+        
         except Exception as e:
             print(f"Search error: {e}")
             self.show_error_message(f"Search failed: {str(e)}")
-    
+
     def show_empty_results(self):
         self.results_summary.configure(text="Please enter keywords to search")
         self.clear_results_grid()
@@ -277,15 +282,22 @@ class HomePage(ctk.CTkScrollableFrame):
         self.clear_results_grid()
         
         summary = results['summary']
+        timing = results.get('timing', {})
+        
         algorithm = summary['algorithm_used']
         time_ms = summary['search_time_ms']
         total_cvs = summary['total_cvs_searched']
         matches = summary['cvs_with_matches']
-        
-        if "→" in algorithm:
-            summary_text = f"{algorithm}: {matches}/{total_cvs} CVs matched in {time_ms}ms (fallback used)"
+        levenshtein_time = timing.get('levenshtein_time_ms')
+
+        if "→" in algorithm or "+ Levenshtein" in algorithm:
+            summary_text = f"{algorithm}: {matches}/{total_cvs} CVs matched\n"
+            summary_text += f"Initial algorithm time: {time_ms}ms"
+            if levenshtein_time is not None:
+                summary_text += f"\nLevenshtein supplement time: {levenshtein_time}ms"
         else:
             summary_text = f"{algorithm}: {matches}/{total_cvs} CVs matched in {time_ms}ms"
+
         
         self.results_summary.configure(text=summary_text)
         
@@ -313,6 +325,7 @@ class HomePage(ctk.CTkScrollableFrame):
             if col >= max_cols:
                 col = 0
                 row += 1
+
     
     def create_real_result_card(self, result, row, col):
         card = ctk.CTkFrame(

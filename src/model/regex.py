@@ -6,7 +6,7 @@ Hal-hal yang perlu di-ekstrak:
 '''
 import re
 
-info_key_regex = [["skill", "summary", "highlight"], ["accomplishment"],
+info_key_regex = [["skill", "summary"], ["highlight"], ["accomplishment"],
                   ["experience", "work"], ["education"]]
 
 def count_words(s: str) -> int:
@@ -79,14 +79,12 @@ def generate_summary(data : dict) -> dict :
             summaries[key] = extract_skill(content)
         elif key == 'experience':
             summaries[key] = extract_job_history(content)
-            
+    
     return summaries
 
 def extract_education(data : list) -> list :
     print("Extracting education")
-    print(data)
-    
-    education = []
+    # print(data)
     
     degree_patterns = [
         r'\b(bachelor|master|phd|doctorate|diploma|certificate)\b',
@@ -109,135 +107,118 @@ def extract_education(data : list) -> list :
     ]
     
     date_patterns = [
+        r'\b(19\d{2}\s*(?: -|to)\s*20\d{2})',
+        r'\b(20\d{2}\s*(?: -|to)\s*20\d{2})',
         r'\b(20\d{2}|19\d{2})\b',
         r'\b(graduated|class\s*of)\s*\d{4}\b',
     ]
     
-    for line in data:
-        line_lower = line.lower()
-        
-        degree_found = None
-        for pattern in degree_patterns:
-            match = re.search(pattern, line_lower, re.IGNORECASE)
-            if match:
-                degree_found = match.group(0)
-                break
-        
-        institution_found = None
-        for pattern in institution_patterns:
-            match = re.search(pattern, line_lower, re.IGNORECASE)
-            if match:
-                institution_found = line.strip()
-                break
-        
-        field_found = None
-        for pattern in field_patterns:
-            match = re.search(pattern, line, re.IGNORECASE)
-            if match:
-                field_found = match.group(1).strip() if len(match.groups()) > 0 else match.group(0)
-                break
-        
-        date_found = None
-        for pattern in date_patterns:
-            match = re.search(pattern, line)
-            if match:
-                date_found = match.group(0)
-                break
-        
-        if degree_found or institution_found or field_found:
-            edu_entry = {
-                "degree": degree_found or field_found or line.strip(),
-                "period": date_found or "Study Period"
-            }
-            if institution_found:
-                edu_entry["institution"] = institution_found
-            education.append(edu_entry)
+    education = []
+    info_education = ['year', 'institution', 'degree']
+    current_edu = dict.fromkeys(info_education)
     
+    for line in data:        
+        raw_line = line.strip().lower()
+        
+        sub_lines = raw_line.split(',')
+        
+        for sentence in sub_lines:
+            # search degree
+            for pattern in degree_patterns:
+                match = re.search(pattern, sentence, re.IGNORECASE)
+                if match and current_edu['degree'] is None:
+                    current_edu['degree'] = sentence.strip()
+                    break
+            
+            # search institution
+            for pattern in institution_patterns:
+                match = re.search(pattern, sentence, re.IGNORECASE)
+                if match and current_edu['institution'] is None:
+                    current_edu['institution'] = sentence.strip()
+                    break
+        
+            # search tahun
+            for pattern in date_patterns:
+                match = re.search(pattern, sentence)
+                if match and current_edu['year'] is None:
+                    current_edu['year'] = match.group(0)
+                    break
+                
+            # jika seluruh field telah terisi, tambahkan ke education dan buat current edu baru
+            if all(current_edu.values()):
+                education.append(current_edu)
+                current_edu = dict.fromkeys(info_education)
     return education[:2] if education else []
 
 def extract_job_history(data : list) -> list :
-    print("Extracting job")
-    print(data)
-    
-    jobs = []
+    print("Extracting job...")
+    # print(data)
     
     job_title_patterns = [
-        r'\b(manager|engineer|developer|analyst|coordinator|specialist|assistant|director|supervisor)\b',
+        r'\b(manager|engineer|developer|analyst|coordinator|specialist|assistant|director|supervisor|cook|chef)\b',
         r'\b(senior|junior|lead|principal|staff)\s+\w+',
     ]
+
     
     company_patterns = [
-        r'\b(company|corporation|corp|inc|ltd|llc|group|solutions|systems|technologies)\b',
-        r'at\s+([^,\n]+)',
+        r'\b(company|corporation|corp|inc|group|technologies)\b',
     ]
     
     date_patterns = [
-        r'\b(20\d{2}|19\d{2})\s*[-–—]\s*(20\d{2}|19\d{2}|present|current)\b',
+        r'\b(19\d{2}\s*(?: -|to)\s*20\d{2})',
+        r'\b(20\d{2}\s*(?: -|to)\s*20\d{2})',
+        r'\b(20\d{2}|19\d{2})\s*(?: -|to)\s*(20\d{2}|19\d{2}|present|current)\b',
         r'\b(20\d{2}|19\d{2})\b',
     ]
     
-    current_job = {}
-    job_lines = []
+    info_job = ['year', 'company', 'role']
+    jobs = []
+    current_job = dict.fromkeys(info_job)
     
     for line in data:
-        line_stripped = line.strip()
-        if not line_stripped:
-            if job_lines:
-                job_entry = process_job_lines(job_lines, job_title_patterns, company_patterns, date_patterns)
-                if job_entry:
-                    jobs.append(job_entry)
-                job_lines = []
-            continue
+        raw_line = line.strip().lower()
         
-        job_lines.append(line_stripped)
-    
-    if job_lines:
-        job_entry = process_job_lines(job_lines, job_title_patterns, company_patterns, date_patterns)
-        if job_entry:
-            jobs.append(job_entry)
-    
+        sub_lines = raw_line.split(',')
+        
+        for sentence in sub_lines:
+            
+            if count_words(sentence) > 7 : continue
+            
+            # search year/period
+            for pattern in date_patterns:
+                match = re.search(pattern, sentence, re.IGNORECASE)
+                if match and current_job['year'] is None:
+                    # print("found : " + sentence)
+                    current_job['year'] = sentence.strip()
+                    break
+                
+            # search company
+            for pattern in company_patterns:
+                match = re.search(pattern, sentence, re.IGNORECASE)
+                if match and current_job['company'] is None:
+                    # print("found company: " + sentence)
+                    current_job['company'] = sentence.strip()
+                    break
+                
+            # search role
+            for pattern in job_title_patterns:
+                match = re.search(pattern, sentence, re.IGNORECASE)
+                if match and current_job['role'] is None:
+                    # print("found role: " + sentence)
+                    current_job['role'] = sentence.strip()
+                    break
+                
+        # jika seluruh field telah terisi, tambahkan ke education dan buat current edu baru
+            if all(current_job.values()):
+                jobs.append(current_job)
+                current_job = dict.fromkeys(info_job)
+        
+    # print(jobs)
     return jobs[:3] if jobs else []
 
-def process_job_lines(lines: list, title_patterns: list, company_patterns: list, date_patterns: list) -> dict:
-    try:
-        title = lines[0] if lines else "Position"
-        period = "Experience Period"
-        company = ""
-        description = ""
-        
-        all_text = " ".join(lines)
-        
-        for pattern in date_patterns:
-            match = re.search(pattern, all_text, re.IGNORECASE)
-            if match:
-                period = match.group(0)
-                break
-        
-        for pattern in company_patterns:
-            match = re.search(pattern, all_text, re.IGNORECASE)
-            if match:
-                if len(match.groups()) > 0:
-                    company = match.group(1).strip()
-                break
-        
-        if len(lines) > 1:
-            description = " ".join(lines[1:])[:150] + "..."
-        else:
-            description = "Professional experience in this role."
-        
-        return {
-            "title": title,
-            "period": period,
-            "description": description
-        }
-        
-    except Exception as e:
-        print(f"Error processing job lines: {e}")
-        return None
-
 def extract_skill(data : list) -> list :
-    print("Extracting skills")
-    print(data)   
+    print("Extracting skills...")
+    # print(data)   
     
     skills = []
     
@@ -275,4 +256,5 @@ def extract_skill(data : list) -> list :
         
 # driver
 if __name__ == "__main__":
-    extract_information_group('data/regex.txt')
+    summary = extract_information_group('../../data/regex.txt')
+    print(summary)

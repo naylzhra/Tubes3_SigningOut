@@ -64,7 +64,7 @@ class DeveloperPage(ctk.CTkScrollableFrame):
                 "name": "Heleni",
                 "nim": "13523107",
                 "quote": "Siapa yang tau \nSiapa yang mau\nKau di sana\nAku diseberangmu\n - Mangu, Fourtwnty",
-                "description": "Makasih buat semuanya, segala hal yang telah dibolehkan terjadi dalam hidupku dan memberi makna mendalam, yaitu stima dan teman-teman SigningOut.\n\nSelamat menyelesaikan semester 4!",
+                "description": "Makasih buat stima, hal yang bisa kukenal baik dan bisa beri makna mendalam.\n\nMakasih juga terkhusus buat tim SigningOut. We slayed it, guys! ヾ(≧▽≦*)o \n\nps: bisa termangu asalkan ga kejauhan ^^",
                 "profile_image": "heleni.jpeg" 
             }
         ]

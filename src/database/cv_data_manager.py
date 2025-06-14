@@ -35,6 +35,8 @@ except ImportError:
         def extract_cv_content_direct(pdf_path, use_regex=False):
             return f"Mock content from {pdf_path}"
 
+# Import the Encryptor class
+# Import Encryptor
 try:
     from model.encryptor import Encryptor
 except ImportError:
@@ -42,6 +44,7 @@ except ImportError:
         import model.encryptor as encryptor_module
         Encryptor = encryptor_module.Encryptor
     except ImportError:
+        # Fallback Encryptor if import fails
         import base64
         class Encryptor:
             def __init__(self, key: str):
@@ -78,12 +81,36 @@ except ImportError:
                 except Exception:
                     return "[DECRYPTION FAILED]"
 
+# Import regex extraction functions
+try:
+    from model.regex import extract_information_group, generate_summary, extract_education, extract_job_history, extract_skill
+except ImportError:
+    try:
+        import model.regex as regex_module
+        extract_information_group = regex_module.extract_information_group
+        generate_summary = regex_module.generate_summary
+        extract_education = regex_module.extract_education
+        extract_job_history = regex_module.extract_job_history
+        extract_skill = regex_module.extract_skill
+    except ImportError:
+        # Fallback functions if import fails
+        def extract_information_group(content):
+            return {}
+        def generate_summary(data):
+            return {}
+        def extract_education(data):
+            return []
+        def extract_job_history(data):
+            return []
+        def extract_skill(data):
+            return []
 
 class CVDataManager:
     def __init__(self):
         self.cv_cache = {} 
         self.applicant_cache = {}  
-        self.skills_cache = {} 
+        self.skills_cache = {}
+        # Initialize encryptor with the same key used in seeder
         self.encryptor = Encryptor("SIGNHIRE")
         
     def get_cv_paths(self) -> dict:
@@ -104,7 +131,7 @@ class CVDataManager:
             formatted_result = {}
             for row in result:
                 detail_id = row[0]
-                cv_path = row[1]
+                cv_path = row[1]  # cv_path is not encrypted, so no need to decrypt
                 formatted_result[f"cv_{detail_id}"] = cv_path
             
             if cur:
@@ -147,12 +174,13 @@ class CVDataManager:
                 dob = row[4]
                 dob_str = dob.strftime("%d %B %Y") if dob else "N/A"
                 
+                # Decrypt the encrypted fields
                 first_name = self.encryptor.decrypt(row[1]) if row[1] else ""
                 last_name = self.encryptor.decrypt(row[2]) if row[2] else ""
                 email = self.encryptor.decrypt(row[3]) if row[3] else ""
                 address = self.encryptor.decrypt(row[5]) if row[5] else ""
                 phone = self.encryptor.decrypt(row[6]) if row[6] else ""
-                role = row[7] if row[7] else ""
+                role = row[7] if row[7] else ""  # applicant_role is not encrypted
                 
                 formatted_result[detail_id] = {
                     "name": f"{first_name} {last_name}".strip(),
@@ -273,6 +301,29 @@ class CVDataManager:
         
         return formatted_data
 
+    def extract_cv_content_and_process(self, cv_path: str, use_regex: bool = False) -> dict:
+        try:
+            content = self.extract_cv_content(cv_path, use_regex)
+            
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as temp_file:
+                temp_file.write(content)
+                temp_filename = temp_file.name
+            
+            try:
+                info_groups = extract_information_group(temp_filename)
+                return info_groups
+            finally:
+                import os
+                try:
+                    os.unlink(temp_filename)
+                except:
+                    pass
+                    
+        except Exception as e:
+            print(f"Error processing CV content: {e}")
+            return {}
+
     def extract_skills_from_cv(self, detail_id: int) -> list:
         try:
             if detail_id in self.skills_cache:
@@ -284,26 +335,15 @@ class CVDataManager:
             if cv_id not in cv_paths:
                 return ["Technical Skills", "Programming", "Software Development"]
             
-            content = self.extract_cv_content(cv_paths[cv_id], use_regex=True)
-            content_lower = content.lower()
+            info_groups = self.extract_cv_content_and_process(cv_paths[cv_id], use_regex=True)
             
-            skills_list = [
-                "python", "java", "javascript", "typescript", "c++", "c#", "php", "ruby", 
-                "html", "css", "react", "angular", "vue", "node.js", "django", "flask",
-                "sql", "mysql", "postgresql", "mongodb", "redis",
-                "aws", "azure", "docker", "kubernetes", "git", "linux"
-            ]
+            if 'skill' in info_groups:
+                skills = extract_skill(info_groups['skill'])
+                if skills:
+                    self.skills_cache[detail_id] = skills
+                    return skills
             
-            found_skills = []
-            for skill in skills_list:
-                pattern = r'\b' + re.escape(skill.lower()) + r'\b'
-                if re.search(pattern, content_lower):
-                    found_skills.append(skill.title())
-            
-            found_skills = list(dict.fromkeys(found_skills))[:10]
-            self.skills_cache[detail_id] = found_skills
-            
-            return found_skills if found_skills else ["Technical Skills", "Programming"]
+            return ["Technical Skills", "Programming"]
             
         except Exception as e:
             print(f"Error extracting skills: {e}")
@@ -317,32 +357,12 @@ class CVDataManager:
             if cv_id not in cv_paths:
                 return self.get_default_job_history()
             
-            content = self.extract_cv_content(cv_paths[cv_id], use_regex=True)
+            info_groups = self.extract_cv_content_and_process(cv_paths[cv_id], use_regex=True)
             
-            # Simplified job history extraction
-            experience_pattern = r'(?i)(?:work\s+)?experience\s*:?\s*(.*?)(?=education|skills|projects|$)'
-            match = re.search(experience_pattern, content, re.DOTALL)
-            
-            if match:
-                experience_text = match.group(1)
-                entries = re.split(r'\n\s*\n', experience_text)
-                
-                jobs = []
-                for entry in entries[:3]:  # Limit to 3 entries
-                    if len(entry.strip()) > 20:
-                        lines = [line.strip() for line in entry.split('\n') if line.strip()]
-                        if len(lines) >= 2:
-                            title = lines[0]
-                            period = next((line for line in lines if re.search(r'20\d{2}', line)), "Experience Period")
-                            description = ' '.join(lines[1:])[:150] + "..."
-                            
-                            jobs.append({
-                                "title": title,
-                                "period": period,
-                                "description": description
-                            })
-                
-                return jobs if jobs else self.get_default_job_history()
+            if 'experience' in info_groups:
+                job_history = extract_job_history(info_groups['experience'])
+                if job_history:
+                    return job_history
             
             return self.get_default_job_history()
             
@@ -358,30 +378,12 @@ class CVDataManager:
             if cv_id not in cv_paths:
                 return self.get_default_education()
             
-            content = self.extract_cv_content(cv_paths[cv_id], use_regex=True)
+            info_groups = self.extract_cv_content_and_process(cv_paths[cv_id], use_regex=True)
             
-            # Simplified education extraction
-            education_pattern = r'(?i)education\s*:?\s*(.*?)(?=work|experience|skills|$)'
-            match = re.search(education_pattern, content, re.DOTALL)
-            
-            if match:
-                education_text = match.group(1)
-                entries = re.split(r'\n\s*\n', education_text)
-                
-                education = []
-                for entry in entries[:2]:  # Limit to 2 entries
-                    if len(entry.strip()) > 10:
-                        lines = [line.strip() for line in entry.split('\n') if line.strip()]
-                        if lines:
-                            degree = lines[0]
-                            period = next((line for line in lines if re.search(r'20\d{2}', line)), "Study Period")
-                            
-                            education.append({
-                                "degree": degree,
-                                "period": period
-                            })
-                
-                return education if education else self.get_default_education()
+            if 'education' in info_groups:
+                education = extract_education(info_groups['education'])
+                if education:
+                    return education
             
             return self.get_default_education()
             

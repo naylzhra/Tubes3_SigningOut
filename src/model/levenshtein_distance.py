@@ -20,7 +20,7 @@ def is_pass(string1: str, string2: str, dist: int) -> bool:
     sim = 1 - (dist / m)
     # panjang keyword kecil
     if len(string2) <= 4:
-        return sim >= 0.9
+        return sim >= 0.75
     return sim > threshold
 
 def levenshtein_calculation(string1: str, string2: str) -> int:
@@ -168,14 +168,14 @@ def search_cvs_with_levenshtein(cv_database: dict, keywords: list, top_n: int = 
     
     return detailed_results
 
-# # driver
-# if __name__ == "__main__":
-#     with open('data/dummy.txt', 'r') as file:
-#         line = file.readline().strip()
-#         words = line.split(' ')
+# driver
+if __name__ == "__main__":
+    with open('../../data/dummy.txt', 'r') as file:
+        line = file.readline().strip()
+        words = line.split(' ')
     
-#         keywords = ['kook', 'coos', 'computer']
+        keywords = ['kook', 'coos', 'computer']
 
-#         # Function call to calculate Levenshtein distance
-#         result = levenshtein_distance(words, keywords)
-#         print(result)
+        # Function call to calculate Levenshtein distance
+        result = levenshtein_distance(words, keywords)
+        print(result)

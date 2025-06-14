@@ -6,7 +6,7 @@ Hal-hal yang perlu di-ekstrak:
 '''
 import re
 
-info_key_regex = [["skill"], ["summary"], ["highlight"], ["accomplishment"],
+info_key_regex = [["skill", "summary", "highlight"], ["accomplishment"],
                   ["experience", "work"], ["education"]]
 
 def count_words(s: str) -> int:

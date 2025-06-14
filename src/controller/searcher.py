@@ -212,7 +212,9 @@ class SearchController:
         try:
             if self.cv_data_manager:
                 summary_data = self.cv_data_manager.get_applicant_summary_data(detail_id)
+                    
                 print(f"Retrieved summary data for detail_id {detail_id}: {summary_data['name']}")
+                
                 return summary_data
             else:
                 return self.get_fallback_summary_data()
@@ -229,15 +231,16 @@ class SearchController:
             "phone": "N/A",
             "email": "N/A",
             "role": "N/A",
-            "skills": ["Technical Skills"],
+            "skills": ["None"],
             "job_history": [{
-                "title": "Professional Experience",
-                "period": "N/A",
-                "description": "Professional experience information."
+                "role": "Applicant Role",
+                "year": "N/A",
+                "company": "Applicant Company"
             }],
             "education": [{
                 "degree": "Educational Background",
-                "period": "N/A"
+                "year": "N/A",
+                "institution": "Applicant Institution"
             }]
         }
     

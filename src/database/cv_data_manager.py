@@ -185,7 +185,7 @@ class CVDataManager:
             self.cv_cache[cache_key] = content
             cv_database[cv_id] = content
             
-            print(f"Extracted {cv_id}: {len(content)} characters")
+            # print(f"Extracted {cv_id}: {len(content)} characters")
         
         print(f"CV database ready with {len(cv_database)} CVs")
         return cv_database
@@ -198,9 +198,23 @@ class CVDataManager:
         
         data = applicant_data[detail_id]
         
-        skills = self.extract_skills_from_cv(detail_id)
-        job_history = self.extract_job_history_from_cv(detail_id)
-        education = self.extract_education_from_cv(detail_id)
+        if detail_id in self.skills_cache:
+            return self.skills_cache[detail_id]
+        
+        cv_paths = self.get_cv_paths()
+        cv_id = f"cv_{detail_id}"
+        
+        if cv_id not in cv_paths:
+            return []
+        
+        info_groups = self.extract_cv_content_and_process(cv_paths[cv_id], use_regex=True)
+        
+        print("DEBUG: get info groups done")
+        print(info_groups)
+        
+        skills = info_groups['skill']
+        job_history = info_groups['experience']
+        education = info_groups['education']
         
         formatted_data = {
             "name": data["name"],
@@ -213,6 +227,8 @@ class CVDataManager:
             "job_history": job_history,
             "education": education
         }
+        
+        print(formatted_data)
         
         return formatted_data
 
@@ -248,7 +264,7 @@ class CVDataManager:
             cv_id = f"cv_{detail_id}"
             
             if cv_id not in cv_paths:
-                return ["Technical Skills", "Programming", "Software Development"]
+                return []
             
             info_groups = self.extract_cv_content_and_process(cv_paths[cv_id], use_regex=True)
             
@@ -258,11 +274,11 @@ class CVDataManager:
                     self.skills_cache[detail_id] = skills
                     return skills
             
-            return ["Technical Skills", "Programming"]
+            return ["Not Found"]
             
         except Exception as e:
             print(f"Error extracting skills: {e}")
-            return ["Technical Skills", "Programming"]
+            return ["Not Found"]
 
     def extract_job_history_from_cv(self, detail_id: int) -> list:
         try:
@@ -279,11 +295,11 @@ class CVDataManager:
                 if job_history:
                     return job_history
             
-            return self.get_default_job_history()
+            return ["Not Found"]
             
         except Exception as e:
             print(f"Error extracting job history: {e}")
-            return self.get_default_job_history()
+            return ["Not Found"]
 
     def extract_education_from_cv(self, detail_id: int) -> list:
         try:
@@ -300,11 +316,11 @@ class CVDataManager:
                 if education:
                     return education
             
-            return self.get_default_education()
+            return ["Not Found"]
             
         except Exception as e:
             print(f"Error extracting education: {e}")
-            return self.get_default_education()
+            return ["Not Found"]
 
     def get_default_job_history(self) -> list:
         return [

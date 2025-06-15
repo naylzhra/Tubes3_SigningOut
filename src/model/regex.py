@@ -6,7 +6,7 @@ Hal-hal yang perlu di-ekstrak:
 '''
 import re
 
-info_key_regex = [["skill", "summary"], ["highlight"], ["accomplishment"],
+info_key_regex = [["skill", "summary", "highlight"], ["accomplishment"],
                   ["experience", "work"], ["education"]]
 
 def count_words(s: str) -> int:
@@ -87,17 +87,20 @@ def extract_education(data : list) -> list :
     # print(data)
     
     degree_patterns = [
-        r'\b(bachelor|master|phd|doctorate|diploma|certificate)\b',
-        r'\b(b\.?s\.?|m\.?s\.?|m\.?a\.?|ph\.?d\.?|b\.?a\.?)\b',
-        r'\b(undergraduate|graduate|postgraduate)\b',
-        r'\b(associate|degree|certification)\b',
-        r'\b(high\s*school)\b',
+        r'\b(bachelor(?:\s+of\s+\w+)?|b\.?s\.?|b\.?a\.?)\b',                         
+        r'\b(master(?:\s+of\s+\w+)?|m\.?s\.?|m\.?a\.?)\b',                      
+        r'\b(ph\.?d\.?|doctorate|doctoral)\b',                                       
+        r'\b(associate(?:\s+degree)?|undergraduate|graduate|postgraduate)\b',      
+        r'\b(diploma|certificate|certification)\b',                               
+        r'\b(high\s*school|secondary\s*school)\b'                             
     ]
+
     
     institution_patterns = [
-        r'\b(university|college|institute|school|academy)\b',
-        r'\bof\s+[\w\s]+\b',  # "University of Something"
+        r'\b(?:university|college|school|academy|institute|school)\s+of\s+[\w\s&\-]+',    
+        r'\b[\w\s&\-]+(?:university|college|school|academy|institute)\b'        
     ]
+
     
     date_patterns = [
         r'\b(19\d{2}\s*(?: -|to)\s*20\d{2})',
@@ -120,20 +123,23 @@ def extract_education(data : list) -> list :
             for pattern in degree_patterns:
                 match = re.search(pattern, sentence, re.IGNORECASE)
                 if match and current_edu['degree'] is None:
-                    current_edu['degree'] = sentence.strip()
+                    print("deg: " + match.group(0))
+                    current_edu['degree'] = match.group(0)
                     break
             
             # search institution
             for pattern in institution_patterns:
                 match = re.search(pattern, sentence, re.IGNORECASE)
                 if match and current_edu['institution'] is None:
-                    current_edu['institution'] = sentence.strip()
+                    print("inst: " + match.group(0))
+                    current_edu['institution'] = match.group(0)
                     break
         
             # search tahun
             for pattern in date_patterns:
                 match = re.search(pattern, sentence)
                 if match and current_edu['year'] is None:
+                    print("year: " + match.group(0))
                     current_edu['year'] = match.group(0)
                     break
                 
@@ -147,16 +153,29 @@ def extract_job_history(data : list) -> list :
     print("Extracting job...")
     # print(data)
     
+    role_core = r'(assistant|senior|junior|staff|lead|principal|manager|engineer|developer|analyst|specialist|director|supervisor|consultant|architect|officer|chef|cook)'
+    modifiers = r'(?:r&d|kitchen|hospitality|research|product|software|data|qa|project|business|marketing|sales|cloud|network|hr|finance|development|design|testing|support|systems|operations|manager)'
+
     job_title_patterns = [
-        r'\b(manager|engineer|developer|analyst|coordinator|specialist|assistant|director|supervisor|cook|chef)\b',
-        r'\b(senior|junior|lead|principal|staff)\s+\w+',
+        rf'\b(?:{modifiers}\s+)?(?:{modifiers}\s+)?{role_core}\b', # before core
+        rf'\b{role_core}(?:\s+{modifiers})?(?:\s+{modifiers})?\b', # after core
+        rf'\b(?:{modifiers}\s+)?{role_core}(?:\s+{modifiers})?\b', # mixed
     ]
 
+
     
+    company_keywords = (
+        r'Company|Co\.?|Corporation|Corp\.?|Inc\.?|Ltd\.?|' 
+        r'Pvt Ltd|Group|Enterprises?|Solutions?|Technologies?|Industries|'
+        r'International|Partners|Systems|Consulting|Networks'
+    )
+
     company_patterns = [
-        r'\b(company|corporation|corp|inc|group|technologies)\b',
+        fr'\b(?:{company_keywords})\s+[A-Z][\w&,.()-]*\b|'
+        fr'\b[A-Z][\w&,.()-]*(?:\s+[A-Z][\w&,.()-]*)*\s+(?:{company_keywords})\b'
     ]
-    
+
+
     date_patterns = [
         r'\b(19\d{2}\s*(?: -|to)\s*20\d{2})',
         r'\b(20\d{2}\s*(?: -|to)\s*20\d{2})',
@@ -174,31 +193,32 @@ def extract_job_history(data : list) -> list :
         sub_lines = raw_line.split(',')
         
         for sentence in sub_lines:
-            
-            if count_words(sentence) > 7 : continue
+
+            if count_words(sentence) > 15 : continue
             
             # search year/period
             for pattern in date_patterns:
                 match = re.search(pattern, sentence, re.IGNORECASE)
                 if match and current_job['year'] is None:
-                    # print("found : " + sentence)
-                    current_job['year'] = sentence.strip()
+                    # print("year: " + match.group(0))
+                    current_job['year'] = match.group(0)
                     break
                 
             # search company
             for pattern in company_patterns:
                 match = re.search(pattern, sentence, re.IGNORECASE)
                 if match and current_job['company'] is None:
-                    # print("found company: " + sentence)
-                    current_job['company'] = sentence.strip()
+                    # print("company: " + match.group(0))
+                    current_job['company'] = match.group(0)
                     break
                 
             # search role
             for pattern in job_title_patterns:
                 match = re.search(pattern, sentence, re.IGNORECASE)
                 if match and current_job['role'] is None:
-                    # print("found role: " + sentence)
-                    current_job['role'] = sentence.strip()
+                    print(sentence)
+                    print("role: " + match.group(0))
+                    current_job['role'] = match.group(0)
                     break
                 
         # jika seluruh field telah terisi, tambahkan ke education dan buat current edu baru

@@ -67,7 +67,7 @@ TUCIL3_13523050_13523079
 
 ## Requirements
 <div>
-    <table align="center">
+    <table>
       <tr>
         <td>No</td>
         <td>Requirement</td>
@@ -120,7 +120,7 @@ TUCIL3_13523050_13523079
 
 ## Author
 <div>
-    <table align="center">
+    <table>
       <tr>
         <td>NIM</td>
         <td>Nama</td>

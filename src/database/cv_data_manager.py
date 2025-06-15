@@ -97,9 +97,8 @@ class CVDataManager:
             for row in result:
                 detail_id = row[0]
                 dob = row[4]
-                dob_str = dob.strftime("%d %B %Y") if dob else "N/A"
+                # dob_str = dob.strftime("%d %B %Y") if dob else "N/A"
                 
-                # Decrypt the encrypted fields
                 first_name = self.encryptor.decrypt(row[1]) if row[1] else ""
                 last_name = self.encryptor.decrypt(row[2]) if row[2] else ""
                 # email = self.encryptor.decrypt(row[3]) if row[3] else ""
@@ -110,7 +109,7 @@ class CVDataManager:
                 formatted_result[detail_id] = {
                     "name": f"{first_name} {last_name}".strip(),
                     # "email": email,
-                    "date_of_birth": dob_str,
+                    "date_of_birth": dob,
                     "address": address,
                     "phone_number": phone,
                     "role": role

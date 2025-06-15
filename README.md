@@ -130,13 +130,13 @@ Tubes3_SigningOut
     <td align="center">
       <a href="https://github.com/naylzhra">
         <img src="https://avatars.githubusercontent.com/naylzhra" width="80" style="border-radius: 50%;" /><br />
-        <span><b>Nayla Zahira</br> 13523058</b></span>
+        <span><b>Nayla Zahira</br> 13523079</b></span>
       </a>
     </td>
         <td align="center">
       <a href="https://github.com/mineraleee">
         <img src="https://avatars.githubusercontent.com/mineraleee" width="80" style="border-radius: 50%;" /><br />
-        <span><b>Heleni Gratia</br> 13523001</b></span>
+        <span><b>Heleni Gratia</br> 13523107</b></span>
       </a>
     </td>
   </tr>

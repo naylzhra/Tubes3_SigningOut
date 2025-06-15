@@ -35,7 +35,7 @@ Regular Expression menggunakan pola khusus dengan notasi standar regex untuk men
 
 ## Struktur Project
 ```
-TUCIL3_13523050_13523079
+Tubes3_SigningOut
 ├── data/                        # Folder untuk file hasil kompilasi 
 ├── doc/
 │   └── laporan.pdf             # Laporan tugas dalam format PDF

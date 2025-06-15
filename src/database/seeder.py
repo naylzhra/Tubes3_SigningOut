@@ -60,6 +60,17 @@ def clean_db():
     cur.close()
     conn.close()
 
+def run_sql_file(sql_path: Path):
+    sql_text = Path(sql_path).read_text(encoding="utf-8")
+
+    statements = [s.strip() for s in sql_text.split(";") if s.strip()]
+
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            for stmt in statements:
+                cur.execute(stmt)
+        conn.commit()
+
 def seed_applicant_profiles(n: int = 250):
     conn = get_db_connection()
     cur = conn.cursor(prepared=True)
@@ -149,3 +160,6 @@ def seed_application_details(max_roles_per_applicant: int = 2):
 if __name__ == "__main__":
     output_sql.write_text(raw_sql, encoding="utf-8")
     print("✅  Encrypted SQL saved to", output_sql)
+    clean_db()
+    run_sql_file(output_sql)
+    

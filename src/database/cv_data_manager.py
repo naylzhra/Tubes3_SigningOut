@@ -84,8 +84,8 @@ class CVDataManager:
                 
             cur = conn.cursor(prepared=True)
             cur.execute(f"""
-                SELECT ad.detail_id, first_name, last_name, email, date_of_birth, 
-                       applicant_address, phone_number, applicant_role
+                SELECT ad.detail_id, first_name, last_name, date_of_birth, 
+                       address, phone_number, application_role
                 FROM ApplicantProfile ap 
                 JOIN ApplicationDetail ad ON ap.applicant_id = ad.applicant_id
                 WHERE ad.detail_id IN ({placeholder})
@@ -102,14 +102,14 @@ class CVDataManager:
                 # Decrypt the encrypted fields
                 first_name = self.encryptor.decrypt(row[1]) if row[1] else ""
                 last_name = self.encryptor.decrypt(row[2]) if row[2] else ""
-                email = self.encryptor.decrypt(row[3]) if row[3] else ""
-                address = self.encryptor.decrypt(row[5]) if row[5] else ""
-                phone = self.encryptor.decrypt(row[6]) if row[6] else ""
-                role = row[7] if row[7] else ""  # applicant_role is not encrypted
-                
+                # email = self.encryptor.decrypt(row[3]) if row[3] else ""
+                address = self.encryptor.decrypt(row[4]) if row[4] else ""
+                phone = self.encryptor.decrypt(row[5]) if row[5] else ""
+                role = row[6] if row[6] else ""  # applicant_role is not encrypted
+
                 formatted_result[detail_id] = {
                     "name": f"{first_name} {last_name}".strip(),
-                    "email": email,
+                    # "email": email,
                     "date_of_birth": dob_str,
                     "address": address,
                     "phone_number": phone,
@@ -221,7 +221,7 @@ class CVDataManager:
             "birthdate": data["date_of_birth"],
             "address": data["address"],
             "phone": data["phone_number"],
-            "email": data["email"],
+            # "email": data["email"],
             "role": data["role"],
             "skills": skills,
             "job_history": job_history,
@@ -255,73 +255,6 @@ class CVDataManager:
             print(f"Error processing CV content: {e}")
             return {}
 
-    def extract_skills_from_cv(self, detail_id: int) -> list:
-        try:
-            if detail_id in self.skills_cache:
-                return self.skills_cache[detail_id]
-            
-            cv_paths = self.get_cv_paths()
-            cv_id = f"cv_{detail_id}"
-            
-            if cv_id not in cv_paths:
-                return []
-            
-            info_groups = self.extract_cv_content_and_process(cv_paths[cv_id], use_regex=True)
-            
-            if 'skill' in info_groups:
-                skills = extract_skill(info_groups['skill'])
-                if skills:
-                    self.skills_cache[detail_id] = skills
-                    return skills
-            
-            return ["Not Found"]
-            
-        except Exception as e:
-            print(f"Error extracting skills: {e}")
-            return ["Not Found"]
-
-    def extract_job_history_from_cv(self, detail_id: int) -> list:
-        try:
-            cv_paths = self.get_cv_paths()
-            cv_id = f"cv_{detail_id}"
-            
-            if cv_id not in cv_paths:
-                return self.get_default_job_history()
-            
-            info_groups = self.extract_cv_content_and_process(cv_paths[cv_id], use_regex=True)
-            
-            if 'experience' in info_groups:
-                job_history = extract_job_history(info_groups['experience'])
-                if job_history:
-                    return job_history
-            
-            return ["Not Found"]
-            
-        except Exception as e:
-            print(f"Error extracting job history: {e}")
-            return ["Not Found"]
-
-    def extract_education_from_cv(self, detail_id: int) -> list:
-        try:
-            cv_paths = self.get_cv_paths()
-            cv_id = f"cv_{detail_id}"
-            
-            if cv_id not in cv_paths:
-                return self.get_default_education()
-            
-            info_groups = self.extract_cv_content_and_process(cv_paths[cv_id], use_regex=True)
-            
-            if 'education' in info_groups:
-                education = extract_education(info_groups['education'])
-                if education:
-                    return education
-            
-            return ["Not Found"]
-            
-        except Exception as e:
-            print(f"Error extracting education: {e}")
-            return ["Not Found"]
-
     def get_default_job_history(self) -> list:
         return [
             {
@@ -350,7 +283,7 @@ class CVDataManager:
             "birthdate": "N/A",
             "address": "N/A",
             "phone": "N/A",
-            "email": "N/A",
+            # "email": "N/A",
             "role": "N/A",
             "skills": ["Technical Skills"],
             "job_history": self.get_default_job_history(),

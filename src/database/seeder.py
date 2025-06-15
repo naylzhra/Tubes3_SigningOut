@@ -13,10 +13,32 @@ from model.encryptor import Encryptor
 fake = Faker()
 DATA_ROOT = Path(__file__).resolve().parents[2] / "data"
 encryptor = Encryptor("SIGNHIRE")
-ROLES = [
-    "ACCOUNTANT", "ENGINEER", "DESIGNER", "TEACHER", "HEALTHCARE",
-    "INFORMATION-TECHNOLOGY", "HR", "FINANCE", "SALES", "CONSULTANT"
-]
+input_sql = Path("src/database/tubes3_seeding.sql")
+output_sql = Path("src/database/tubes3_seeding_encrypted.sql")
+raw_sql = input_sql.read_text(encoding="utf-8")
+
+profile_insert_rx = re.compile(
+    r"INSERT INTO\s+ApplicantProfile\s*\([^)]*\)\s*VALUES\s*(.*?);",
+    re.I | re.S)
+
+profile_tuple_rx = re.compile(
+    r"\(\s*(\d+)\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*,"
+    r"\s*'([^']*)'\s*,\s*'([^']*)'\s*\)"
+)
+
+def seed_profile(m_obj: re.Match) -> str:
+    tuples_sql = m_obj.group(1)
+    out_rows   = []
+    for tid, first, last, dob, addr, phone in profile_tuple_rx.findall(tuples_sql):
+        out_rows.append(
+            f"({tid}, '{encryptor.encrypt(first)}', '{encryptor.encrypt(last)}', "
+            f"'{dob}', '{encryptor.encrypt(addr)}', '{encryptor.encrypt(phone)}')"
+        )
+    return f"INSERT INTO ApplicantProfile (applicant_id, first_name, last_name," \
+           f" date_of_birth, address, phone_number) VALUES\n" + ",\n".join(out_rows) + ";"
+
+raw_sql = profile_insert_rx.sub(seed_profile, raw_sql)
+
 
 def clean_phone() -> str:
     digits = re.sub(r'\D', '', fake.phone_number())
@@ -29,10 +51,11 @@ def clean_db():
     if conn is None:
         return
     cur = conn.cursor()
-    cur.execute("SET FOREIGN_KEY_CHECKS = 0;")
-    cur.execute("TRUNCATE TABLE ApplicationDetail")
-    cur.execute("TRUNCATE TABLE ApplicantProfile")
-    cur.execute("SET FOREIGN_KEY_CHECKS = 1;")
+    clean_db()
+    # cur.execute("SET FOREIGN_KEY_CHECKS = 0;")
+    # cur.execute("TRUNCATE TABLE ApplicationDetail")
+    # cur.execute("TRUNCATE TABLE ApplicantProfile")
+    # cur.execute("SET FOREIGN_KEY_CHECKS = 1;")
     conn.commit()
     cur.close()
     conn.close()
@@ -42,7 +65,7 @@ def seed_applicant_profiles(n: int = 250):
     cur = conn.cursor(prepared=True)
     insert_stmt = """
         INSERT INTO ApplicantProfile
-        (first_name, last_name, email, date_of_birth, applicant_address, phone_number)
+        (first_name, last_name, email, date_of_birth, address, phone_number)
         VALUES (%s, %s, %s, %s, %s, %s)
     """
     for _ in range(n):
@@ -88,7 +111,7 @@ def seed_application_details(max_roles_per_applicant: int = 2):
                 return aid
 
     insert_stmt = """
-        INSERT INTO ApplicationDetail (applicant_id, applicant_role, cv_path)
+        INSERT INTO ApplicationDetail (applicant_id, application_role, cv_path)
         VALUES (%s, %s, %s)
     """
 
@@ -124,6 +147,5 @@ def seed_application_details(max_roles_per_applicant: int = 2):
     conn.close()
 
 if __name__ == "__main__":
-    clean_db()
-    seed_applicant_profiles(400)
-    seed_application_details(2)
+    output_sql.write_text(raw_sql, encoding="utf-8")
+    print("✅  Encrypted SQL saved to", output_sql)

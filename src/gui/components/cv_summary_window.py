@@ -132,7 +132,7 @@ Address      : {self.cv_data['address']}
 
 Phone          : {self.cv_data['phone']}
 
-Email            : {self.cv_data.get('email', 'N/A')}
+# Email            : {self.cv_data.get('email', 'N/A')}
 
 Role             : {self.cv_data.get('role', 'N/A')}"""
         

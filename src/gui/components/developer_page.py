@@ -56,7 +56,7 @@ class DeveloperPage(ctk.CTkScrollableFrame):
             {
                 "name": "Nayla",
                 "nim": "13523079",
-                "quote": "Pasti kau temukan aku di garis terdepan \nBertepuk dengan sebelah tangan \n - Garis Terdepan, Fiersa Bestari",
+                "quote": "Pasti kau temukan aku\ndi garis terdepan \nBertepuk dengan sebelah tangan \n - Garis Terdepan, Fiersa Bestari",
                 "description": "Terima kasih Stima atas \nsemua perjalanan, pelajaran,\ndan kenangannya.\n\nApresiasi besar juga ke tim signingOut\n\nWe did great! lovyu ol <3\n\nps: kata heleni jangan sampe termangu ges",
                 "profile_image": "nayla.jpg"  
             },

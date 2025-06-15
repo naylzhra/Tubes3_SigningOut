@@ -2,7 +2,7 @@
 Implementasi Allgoritma Levenshtein Distance
 '''
 
-threshold = 0.5
+threshold = 0.6
 
 def levenshtein_distance(data: list, keyword: list) -> dict:
     res = {key: 0 for key in keyword}
@@ -165,14 +165,14 @@ def search_cvs_with_levenshtein(cv_database: dict, keywords: list, top_n: int = 
     
     return detailed_results
 
-# # driver
-# if __name__ == "__main__":
-#     with open('data/dummy.txt', 'r') as file:
-#         line = file.readline().strip()
-#         words = line.split(' ')
+# driver
+if __name__ == "__main__":
+    with open('../../data/dummy.txt', 'r') as file:
+        line = file.readline().strip()
+        words = line.split(' ')
     
-#         keywords = ['kook', 'coos', 'computer']
+        keywords = ['kook', 'coos', 'computer']
 
-#         # Function call to calculate Levenshtein distance
-#         result = levenshtein_distance(words, keywords)
-#         print(result)
+        # Function call to calculate Levenshtein distance
+        result = levenshtein_distance(words, keywords)
+        print(result)

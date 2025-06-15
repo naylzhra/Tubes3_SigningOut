@@ -119,26 +119,28 @@ Tubes3_SigningOut
    ```
 
 ## Author
-<div>
-    <table>
-      <tr>
-        <td>NIM</td>
-        <td>Nama</td>
-      </tr>
-      <tr>
-        <td>13523043</td>
-        <td>Najwa Kahani Fatima</td>
-      </tr>
-      <tr>
-        <td>13523079</td>
-        <td>Nayla Zahira</td>
-      </tr>
-      <tr>
-        <td>13523107</td>
-        <td>Heleni Gratia Meitrina Tampubolon</td>
-      </tr>
-    </table>
-</div>
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/najwakahanifatima">
+        <img src="https://avatars.githubusercontent.com/najwakahanifatima" width="80" style="border-radius: 50%;" /><br />
+        <span><b>Najwa Kahani Fatima</br> 13523043</b></span>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/naylzhra">
+        <img src="https://avatars.githubusercontent.com/naylzhra" width="80" style="border-radius: 50%;" /><br />
+        <span><b>Nayla Zahira</br> 13523058</b></span>
+      </a>
+    </td>
+        <td align="center">
+      <a href="https://github.com/mineraleee">
+        <img src="https://avatars.githubusercontent.com/mineraleee" width="80" style="border-radius: 50%;" /><br />
+        <span><b>Heleni Gratia</br> 13523001</b></span>
+      </a>
+    </td>
+  </tr>
+</table>
 
 <div>
   <strong>Strategi Algoritma IF2211 - Institut Teknologi Bandung</strong><br>

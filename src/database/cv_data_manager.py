@@ -96,19 +96,17 @@ class CVDataManager:
             formatted_result = {}
             for row in result:
                 detail_id = row[0]
-                dob = row[4]
+                dob = row[3]
                 # dob_str = dob.strftime("%d %B %Y") if dob else "N/A"
                 
                 first_name = self.encryptor.decrypt(row[1]) if row[1] else ""
                 last_name = self.encryptor.decrypt(row[2]) if row[2] else ""
-                # email = self.encryptor.decrypt(row[3]) if row[3] else ""
                 address = self.encryptor.decrypt(row[4]) if row[4] else ""
                 phone = self.encryptor.decrypt(row[5]) if row[5] else ""
                 role = row[6] if row[6] else ""  # applicant_role is not encrypted
 
                 formatted_result[detail_id] = {
                     "name": f"{first_name} {last_name}".strip(),
-                    # "email": email,
                     "date_of_birth": dob,
                     "address": address,
                     "phone_number": phone,
@@ -220,7 +218,6 @@ class CVDataManager:
             "birthdate": data["date_of_birth"],
             "address": data["address"],
             "phone": data["phone_number"],
-            # "email": data["email"],
             "role": data["role"],
             "skills": skills,
             "job_history": job_history,
@@ -282,7 +279,6 @@ class CVDataManager:
             "birthdate": "N/A",
             "address": "N/A",
             "phone": "N/A",
-            # "email": "N/A",
             "role": "N/A",
             "skills": ["Technical Skills"],
             "job_history": self.get_default_job_history(),

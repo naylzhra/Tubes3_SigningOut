@@ -229,7 +229,6 @@ class SearchController:
             "birthdate": "N/A",
             "address": "N/A", 
             "phone": "N/A",
-            # "email": "N/A",
             "role": "N/A",
             "skills": ["None"],
             "job_history": [{
